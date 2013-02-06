@@ -1,19 +1,14 @@
-(function( window ) {
-	'use strict';
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-38317100-1']);
+_gaq.push(['_setDomainName', 'semanticsworks.com']);
+_gaq.push(['_trackPageview']);
 
-	var _gaq = [
-		['_setAccount', 'UA-38317100-1'],
-		['_setDomainName', 'semanticsworks.com'],
-		['_trackPageview']
-	];
-	(function( d, t ) {
-		var g = d.createElement( t ),
-			s = d.getElementsByTagName( t )[0];
-		g.src = '//www.google-analytics.com/ga.js';
-		s.parentNode.insertBefore( g, s )
-	}( document, 'script' ));
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+})();
 
-})( window );
 
 if (!matrix.baseUrl) {
 	matrix.baseUrl = "../assets/";
