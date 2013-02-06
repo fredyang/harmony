@@ -3,6 +3,7 @@
 
 	var _gaq = [
 		['_setAccount', 'UA-38317100-1'],
+		['_setDomainName', 'semanticsworks.com'],
 		['_trackPageview']
 	];
 	(function( d, t ) {
