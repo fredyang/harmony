@@ -92,6 +92,13 @@
 			<li>A event subscription has two objects, publisher and subscriber, while event
 				binding has only publisher and no subscriber.
 			</li>
+			<li>
+				When target event happens, the handler of event binding tends to control
+				arbitrary things which may or may not be in conflict with each others, because there is
+				not subscriber. When target event happens, the handler of event subscriptions, the
+				subscriber tends to do very specific things which affect himself, there will be no
+				conflict, so there is no need to to "synchronize".
+			</li>
 			<li>The publisher of a subscription does not need to keep track of
 				event handler, while publisher of event binding holds a list of event handlers.
 			</li>
@@ -102,8 +109,10 @@
 			A typical subscriptions include the following steps.</p>
 
 		<ol class="list">
-			<li>A subscriber use Harmony to register a subscription for a event of a publisher with
-				a handler workflow. As a result of the registration, Harmony keep a record like the
+			<li>A subscriber use Harmony to register a subscription for a event of a publisher
+				with
+				a handler workflow. As a result of the registration, Harmony keep a record like
+				the
 				following:
 <pre data-sub="prettyprint:_">
 var x = {
@@ -129,22 +138,28 @@ executeWorkflow(x.workflow, x.publisher, x.subscriber, x.event);
 		</p>
 
 		<p>
-			Firstly, because publisher does not keep record of subscription, it can not notify the
-			subscriber. The notification is handled by Harmony. If publisher is a model, this means
-			that a model is more light-weight, because it does not have the burden to keep track of
+			Firstly, because publisher does not keep record of subscription, it can not notify
+			the
+			subscriber. The notification is handled by Harmony. If publisher is a model, this
+			means
+			that a model is more light-weight, because it does not have the burden to keep track
+			of
 			its subscriptions.</p>
 
 		<p>
-			Secondly, the workflow object is not executing itself, instead it s executed by Harmony
+			Secondly, the workflow object is not executing itself, instead it s executed by
+			Harmony
 			workflow executor. The workflow does not know either publisher or subscriber, the
 			workflow executor introduce them to workflow when it is executed. This
-			make the <a href="/fredyang/harmony/doc/workflowActivity.html">workflow</a> stateless, and very
+			make the <a href="/fredyang/harmony/doc/workflowActivity.html">workflow</a>
+			stateless, and very
 			reusable.
 		</p>
 
 		<p>The reason it is called <strong>Unified Subscription</strong> is that,
 
-			both publisher and subscriber can be model (model node) or view (jQuery object or DOM
+			both publisher and subscriber can be model (model node) or view (jQuery object or
+			DOM
 			element), and the event can be either model event or view event (DOM event or jQuery
 			event).
 		</p>

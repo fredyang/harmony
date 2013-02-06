@@ -1,12 +1,18 @@
-var _gaq = [
-	['_setAccount', 'UA-34311489-2'],
-	['_trackPageview']
-];
-(function( d, t ) {
-	var g = d.createElement( t ), s = d.getElementsByTagName( t )[0];
-	g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
-	s.parentNode.insertBefore( g, s )
-}( document, 'script' ));
+(function( window ) {
+	'use strict';
+
+	var _gaq = [
+		['_setAccount', 'UA-38317100-1'],
+		['_trackPageview']
+	];
+	(function( d, t ) {
+		var g = d.createElement( t ),
+			s = d.getElementsByTagName( t )[0];
+		g.src = '//www.google-analytics.com/ga.js';
+		s.parentNode.insertBefore( g, s )
+	}( document, 'script' ));
+
+})( window );
 
 if (!matrix.baseUrl) {
 	matrix.baseUrl = "../assets/";
