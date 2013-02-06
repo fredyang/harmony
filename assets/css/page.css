@@ -1,0 +1,90 @@
+/* **************** layout ***************** */
+/* ====== Page Head, Body, and Foot ====== */
+body {
+	_text-align: center;
+}
+
+/* IE5.5 */
+.main {
+	/*display: table-cell;*/
+	*display: block;
+	width: auto;
+}
+
+.body, .main {
+	*zoom: 1;
+}
+
+.body {
+	margin-bottom: 20px;
+}
+
+.head {
+    margin-bottom: 10px;
+}
+
+.body:after, .main:after {
+	clear: both;
+	display: block;
+	visibility: hidden;
+	overflow: hidden;
+	height: 0 !important;
+	line-height: 0;
+	font-size: xx-large;
+	content: " x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x ";
+}
+
+/* .page element contains everything, in template.html demo page <h1> is not included, this
+is for demo use, just ignore that in production*/
+.page {
+	margin: 0 auto 30px;
+	width: 960px;
+	_text-align: left;
+}
+
+/* wraps other template elems to set width */
+/* text-align IE5.5 */
+/* "old school" and "liquid" extend page to allow for different page widths */
+/*you can use it with leftColumn and rightColumnn*/
+.oldSchool {
+	width: 750px;
+}
+
+.gs960 {
+	width: 965px;
+}
+
+.liquid {
+	width: auto;
+	margin: 0;
+}
+
+/* ====== Columns ====== */
+.leftCol {
+	float: left;
+	width: 250px;
+	_margin-right: -3px;
+}
+
+.rightCol {
+	float: right;
+	width: 300px;
+	_margin-left: -3px;
+}
+
+/* extend columns to allow for common column widths */
+.gMail {
+	width: 160px;
+}
+
+.gCal {
+	width: 180px;
+}
+
+.yahoo {
+	width: 240px;
+}
+
+.myYahoo {
+	width: 300px;
+}

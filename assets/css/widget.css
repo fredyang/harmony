@@ -1,0 +1,168 @@
+body {
+	/*font-family: "Myriad Pro", "Segoe UI", Helvetica, Arial, sans-serif;*/
+	/*Georgia, Helvetica, Arial, sans-serif;*/
+}
+
+/* **************** CONTENT OBJECTS ***************** */
+
+/* ====== Elements ====== */
+
+/*hr {*/
+/*border: 5px solid #e2e2e2;*/
+/*border-width: 0 0 5px 0;*/
+/*margin: 20px 10px 10px 10px;*/
+/*}*/
+
+.wb {
+	word-break: break-all;
+}
+
+.fixedTable {
+	table-layout:fixed;
+}
+
+
+code {
+	color: #0B8C8F;
+}
+
+a {
+	cursor: pointer;
+	padding: 3px;
+	text-decoration: underline;
+}
+
+/*.important a {*/
+/*font-weight: bold;*/
+/*}*/
+
+/* what is this? */
+/* links */
+a:link {
+	color: #069;
+	/*text-decoration: underline;*/
+	/*border-bottom: 1px solid;*/
+}
+
+a:visited {
+	color: #994464;
+}
+
+a:focus, a:hover {
+	color: #fff;
+	background-color: #069;
+	text-decoration: none;
+}
+
+a:active {
+	color: #ffff00;
+}
+
+/*navigation*/
+.nav-h, .nav-v {
+	padding-left: 0;
+	clear: both;
+}
+
+.nav-h ul, .nav-v ul {
+	padding-left: 10px;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.nav-h li {
+	list-style-type: none;
+	float: left;
+	margin-right: 10px;
+}
+
+.nav-v li {
+	list-style-type: none;
+	margin-top: 5px;
+	/*margin-bottom: 5px;*/
+
+}
+
+.vlist > * {
+	padding-top: 10px;
+	display: block;
+}
+
+.hlist {
+	overflow: auto;
+	margin-bottom: 10px;
+	background-color: #b8e0ff;
+}
+
+.hlist > * {
+	display: block;
+	float: left;
+	padding: 10px;
+	text-decoration: none;
+}
+
+/*embedded messageBox*/
+.error, .alert, .notice, .success, .info {
+	/*padding: 0.8em;*/
+	/*margin-bottom: 1em;*/
+	border: 1px solid #ddd;
+}
+
+.error, .alert {
+	background: #fbe3e4;
+	color: #8a1f11;
+	border-color: #fbc2c4;
+}
+
+.notice {
+	background: #fff6bf;
+	color: #514721;
+	border-color: #ffd324;
+}
+
+.success {
+	background: #e6efc2;
+	color: #264409;
+	border-color: #c6d880;
+}
+
+.info {
+	background: #d5edf8;
+	color: #205791;
+	border-color: #92cae4;
+}
+
+.error a, .alert a {
+	color: #8a1f11;
+}
+
+.notice a {
+	color: #514721;
+}
+
+.success a {
+	color: #264409;
+}
+
+.info a {
+	color: #205791;
+}
+
+table {
+	border: 1px solid #4E7178;
+}
+
+th, td {
+	border: 1px solid #4E7178;
+	padding: 5px;
+}
+
+.button {
+	cursor: pointer;
+}
+
+.linkButton {
+	text-decoration: none !important;
+	background: none !important;
+	color: inherit !important;
+}

@@ -1,0 +1,100 @@
+<script type="jsrender" id="api.editOverload.list">
+
+	<div data-sub="hideOnEdit:.">
+
+		<div class="toolbar">
+			<a class="imageLink icon-create icon" data-sub="newItem:.">New Overload</a>
+		</div>
+		<table>
+			<col width="auto">
+			<col width="120px">
+			<col width="130px">
+
+			<tr>
+				<th class="txtL">Name</th>
+				<th class="txtL">Version Added</th>
+				<th>Actions</th>
+			</tr>
+
+			<tbody data-sub="listView:.|api.editOverload.row;
+			                 shadowEdit:."/>
+
+
+		</table>
+	</div>
+
+	<div data-sub="showOnEdit:.;
+	               for:/|api.editOverload.form">
+	</div>
+
+
+</script>
+
+<script type="jsrender" id="api.editOverload.row">
+	<tr>
+		<td>{{:name}}</td>
+		<td>{{:versionAdded}}</td>
+		<td>
+			<button class="icon-edit icon" title="Edit" data-sub="editRow:."></button>
+			<button class="icon-delete icon" title="Remove" data-sub="deleteRow:."></button>
+			<button class="icon-up icon" title="Move up" data-sub="moveUpButton:."></button>
+			<button class="icon-down icon" title="Move Down" data-sub="moveDownButton:."></button>
+		</td>
+	</tr>
+</script>
+
+<script type="jsrender" id="api.editOverload.form">
+	<table class="layout">
+		<col style="width:120px">
+		<tbody data-sub="ns:*edit.item;
+						forSelf:.">
+		<tr class="toolbar">
+			<td colspan="2">
+				<a class="imageLink icon-save icon" data-sub="checkValidity:.;
+				                                              saveButton:.">Save
+					Overload</a>
+				<a class="imageLink icon-no icon" data-sub="cancelSaveButton:.">Cancel Edit
+					Overload</a>
+			</td>
+		</tr>
+
+		<tr>
+			<td>
+				<label>Name:</label>
+			</td>
+			<td>
+				<input type="text" data-sub="ns:name;
+				                             val:.;
+				                             required:.;
+				                             warn:."/>
+			</td>
+		</tr>
+
+		<tr>
+			<td>
+				<label>Added Version:</label>
+
+			</td>
+
+			<td>
+				<select data-sub="val:versionAdded">
+					<option></option>
+					<option>0.1</option>
+					<option>0.2</option>
+					<option>0.3</option>
+					<option>0.4</option>
+				</select>
+			</td>
+		</tr>
+
+		<tr>
+			<td colspan="2">
+				<div>Parameters:</div>
+				<div data-sub="ns:parameters;
+				               for:/|api.editParameter.list"></div>
+			</td>
+		</tr>
+
+		</tbody>
+	</table>
+</script>

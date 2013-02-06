@@ -1,0 +1,396 @@
+@import "../assets/css/all.css";
+
+p, textarea, .p * {
+	line-height: 1.7 !important;
+}
+.highlight {
+	background-color: #e6ff93;
+}
+
+.leftCol {
+	width: 220px;
+	position: fixed;
+}
+
+.hd, .head {
+	/*background-color: #DFFFFA;*/
+	background-color: #b8e0ff;
+}
+
+.fixedHead .head {
+	position: fixed;
+	top: 0;
+	height: 100px;
+	z-index: 1000;
+	width: inherit;
+}
+
+/*.fixedHead .head a {*/
+/*text-decoration: none;*/
+/*background: none;*/
+/*color: inherit;*/
+/*}*/
+
+.head nav {
+	float: right;
+	margin-top: 30px;
+}
+
+.head nav a {
+	margin-right: 20px;
+}
+
+.fixedHead .head h1 {
+	margin-top: 15px;
+	margin-bottom: 0;
+	margin-left: 20px;
+}
+
+.fixedHead .head p {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 40px;
+}
+
+.fixedHead .body {
+	padding-top: 10px;
+}
+
+.fixedHead .transition {
+	position: fixed;
+	top: 90px;
+	height: 30px;
+	background-color: white;
+	z-index: 900;
+	width: inherit;
+}
+
+.fixedHead .main {
+	margin-left: 240px;
+}
+
+.fixedHead .main.home {
+	margin-left: 0;
+}
+
+.fixedHead .body {
+	margin-top: 110px;
+}
+
+a.selected {
+	color: #fff;
+	background-color: #069;
+	text-decoration: none;
+}
+
+.footer {
+	padding: 20px;
+	height: 20px;
+}
+
+table {
+	width: 100%;
+}
+
+table.layout {
+	border: none;
+}
+th {
+	text-align: left;
+}
+td {
+	vertical-align: top;
+}
+
+table.layout > tbody > * > td,
+table.layout > tbody > * > th
+{
+	border: none;
+}
+
+.head header {
+	float: left;
+}
+
+.main {
+	min-height: 680px;
+}
+
+.tree {
+    max-height: 700px;
+	overflow-y: scroll;
+	margin: 0 !important;
+}
+div[data-tabView] {
+	display: none;
+}
+
+div[data-tabView].selected {
+	display: block;
+}
+
+/*fix that when href is empty, the hand cursor does not show*/
+
+.ui-icon {
+	width: 16px;
+	height: 16px;
+	background-image: url(../assets/css/image/ui-icons_469bdd_256x240.png);
+	display: block;
+	text-indent: -99999px;
+	overflow: hidden;
+	background-repeat: no-repeat;
+}
+.ui-icon-plus {
+	background-position: -16px -128px;
+}
+
+.ui-icon-minus {
+	background-position: -48px -128px;
+}
+
+
+.ui-icon-blank {
+	background-position: -80px -240px;
+}
+
+
+/*icon*/
+
+.icon {
+	height: 16px;
+	width: 16px;
+	border: none;
+	/*background-size: 100%;*/
+	margin-right: 5px;
+	background-repeat: no-repeat;
+}
+
+
+.icon-move {
+	background-image: url(../assets/css/image/Move.png);
+}
+
+.icon-save {
+	background-image: url(../assets/css/image/Save.png);
+}
+
+.icon-delete {
+	background-image: url("../assets/css/image/Delete.png");
+}
+
+.icon-up {
+	background-image: url("../assets/css/image/Up.png");
+}
+
+.icon-down {
+	background-image: url("../assets/css/image/Down.png");
+}
+
+.icon-edit {
+	background-image: url("../assets/css/image/Modify.png");
+}
+
+.icon-undo {
+	background-image: url("../assets/css/image/Undo.png");
+}
+
+.icon-review {
+	background-image: url("../assets/css/image/View.png");
+}
+
+.icon-create {
+	background-image: url("../assets/css/image/Create.png");
+}
+
+.icon-no {
+	background-image: url("../assets/css/image/No.png");
+}
+
+td input[type=text], td textarea{
+	width: 100%;
+}
+
+.apiForm {
+	background-color: #fffeee;
+}
+
+.apiForm  .layout {
+	background-color: #f2f1e1;
+}
+
+.apiForm  .layout .layout {
+	background-color: #e7e6d6;
+}
+
+.apiForm  .layout .layout .layout {
+	background-color: #deddcd;
+}
+
+td[colspan] > table,
+td[colspan] > div{
+	margin-top: 10px;
+}
+
+.toolbar {
+	background-color: #b8e0ff;
+	text-align: left;
+	height: 25px;
+	padding-top: 5px;
+	padding-left: 5px;
+	margin-bottom: 10px;
+}
+
+.toolbar td {
+	padding-left: 10px;
+}
+
+.imageLink {
+	padding-left: 24px;
+	background-position: 5px 4px;
+	text-decoration: none;
+}
+
+tr.selected {
+	background-color: #fffeee;
+}
+
+code {
+	color: inherit;
+	background-color: #f2f2f2;
+	padding: 0.1px;
+	font-family: monospace, serif;
+}
+
+.code {
+	color: inherit;
+	background-color: #f2f2f2;
+	font-family: monospace, serif;
+}
+
+
+
+.codeBg {
+	background-color: #f2f2f2;
+}
+
+.desc2 > *:first-child {
+}
+
+.desc2 > *:first-child + * {
+	float: right;
+}
+
+.desc2 {
+	margin-top: 15px;
+	overflow: auto;
+}
+
+.underline {
+	border-bottom: 1px solid #b1b1b1;
+	padding-bottom: 5px;
+}
+
+h5 {
+	margin: 1em 0;
+}
+
+iframe {
+	border: none;
+}
+
+iframe.demo {
+	background-color: #e1e1e1;
+	width: 100%;
+}
+
+textarea {
+	line-height: 1.4;
+}
+textarea.s {
+	height: 3em;
+}
+
+textarea.m {
+	height: 9em;
+}
+
+textarea.l {
+	height: 500px !important;
+}
+
+.noborder {
+	border: none !important;
+}
+
+div.preview {
+	position: relative;
+}
+
+a.preview {
+	padding-left: 20px;
+	background-repeat: no-repeat;
+	background-image: url(http://static.jsbin.com/images/favicon.png);
+	background-position: 0 6px;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+div.preview:hover a.preview {
+	color: #fff;
+	background-color: #069;
+	text-decoration: none;
+}
+
+iframe.preview {
+	position: absolute;
+	width: 600px;
+	height: 400px;
+	top: 25px;
+	right: 0;
+	overflow: hidden;
+	display: none;
+	z-index: 1000;
+	background-color: #d3d3d3;
+}
+
+a.preview:hover + iframe {
+	display: block;
+}
+
+iframe:hover {
+	display: block;
+}
+
+h2:first-child {
+	margin-top: 0;
+}
+
+dt {
+	margin-top: 20px;
+	font-size: 1.2em;
+}
+
+dd {
+	margin-left: 0;
+	border-bottom: 1px solid #deddcd;
+	padding-bottom: 10px;
+}
+
+/*textarea {
+	height: 600px !important;
+}*/
+
+/*
+.prettyprint {
+	border: none !important;
+	background-color: #f2f2f2;
+}*/
+
+.list li {
+	margin-bottom: 1em;
+}
+
+[data-tabview="view"] {
+	min-height: 300px;
+}

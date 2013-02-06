@@ -1,0 +1,92 @@
+/*
+<div class="mod frame">
+	<div class="hd">
+		<h3>header</h3>
+	</div>
+	<div class="bd">
+		<p>body</p>
+	</div>
+	<div class="ft">
+		<p>footer</p>
+	</div>
+</div>
+*/
+
+.mod {
+	/*margin: 10px;*/
+	/*padding: 10px;*/
+}
+
+/*.mod > .hd > content*/
+.mod > .hd > * {
+	margin: 0;
+}
+
+.mod .bd {
+	/*margin: 10px;*/
+}
+
+.mod .hd {
+	margin: 0;
+	padding: 10px;
+}
+
+.sharp .hd {
+	background-color: #E9E9E9;
+}
+
+/*skin*/
+.win8 {
+ background-color: #505aff;
+}
+
+.deep {
+    background-color: #82661a;
+}
+
+.charm {
+    background-color: rgba(255, 43, 110, 0.24);
+}
+
+
+.frame {
+	border: 1px solid #4E7178;
+}
+
+.frameNoTop {
+	border-top: 0;
+	border-left: 1px solid #4E7178;
+	border-right: 1px solid #4E7178;
+	border-bottom: 1px solid #4E7178;
+}
+
+
+.frameNoBottom {
+	border-top: 1px solid #4E7178;
+	border-left: 1px solid #4E7178;
+	border-right: 1px solid #4E7178;
+	border-bottom: 0;
+}
+
+.roundAll {
+	border-radius: 10px;
+}
+
+.roundAll .hd {
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+.roundBottom {
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+.roundTop {
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+
+
+

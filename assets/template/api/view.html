@@ -1,0 +1,146 @@
+<script type="jsrender" id="api.view.categoryTree">
+	{{for #data}}
+
+	{{*
+		view.ctx.subEntries = view.ctx.get("/api.getSubEntries", data);
+	}}
+	<li>
+
+		{{if #ctx.subEntries.length}}
+
+			<span class="button ui-icon {{:~getExpanderClass(#data)}} fL right10"
+			      data-sub="mapClick:.|toggleExpander">&nbsp;</span>
+
+			<a data-tabLink="{{:~getEntryFullName(#data)}}"
+			   data-sub="mapEvent:.|dblclick,toggleExpander">{{:name}}</a>
+
+			<ul {{:~getSubEntryStyle(#data)}} >
+				{{for ~subEntries tmpl="api.view.categoryTree" /}}
+			</ul>
+
+		{{else}}
+
+			<span class="button ui-icon ui-icon-blank fL right10"></span>
+			<a data-tabLink="{{:~getEntryFullName(#data)}}">{{:name}}</a>
+
+		{{/if}}
+	</li>
+	{{/for}}
+</script>
+
+<script type="jsrender" id="api.view.selectedEntry">
+	<!--#data is selected entry-->
+	{{if #data}}
+		<div class="mod  ">
+			<div class="hd">
+				<h2>
+					{{:shortDesc}}
+				</h2>
+			</div>
+
+			<div class="bd mtm">
+				<div class="txtR">
+					{{for [~getParentNamespaces(#data)] tmpl="api.view.breadcrumb" /}}
+				</div>
+			</div>
+		</div>
+
+		{{if ( longDesc ) }}
+			<div class="mod  mtl mbl ">
+				<div class="hd">
+					<h3>
+						Overview
+					</h3>
+				</div>
+				<div class="bd">
+					{{:longDesc}}
+				</div>
+			</div>
+		{{/if}}
+
+
+		{{for signatures tmpl="api.view.signature" /}}
+	{{/if}}
+</script>
+
+<script type="jsrender" id="api.view.breadcrumb">
+
+	Categories:
+	{{if #data.length}}
+		{{for #data}}
+			<a class="namespace" data-sub="$click:selectedEntryName|*hardCode|{{:fullName}}">{{:name}}</a>
+		{{/for}}
+	{{else}}
+		Root
+	{{/if}}
+</script>
+
+<script type="jsrender" id="api.view.signature">
+	<div class="mod  mtl mbl ">
+
+		<div class="hd">
+			<h3 class="desc2">
+				<span>{{:name}}</span>
+				<span>Returns:{{:returns}}</span>
+			</h3>
+		</div>
+		<div class="bd vlist">
+			{{if (shortDesc) }}
+			<p class="desc">
+				<strong>Description:</strong>
+				<span>{{:shortDesc}}</span>
+			</p>
+			{{/if}}
+
+			{{for [overloads] tmpl="api.view.overload" /}}
+
+			<p class="longDesc">
+				{{:desc}}
+			</p>
+
+			{{for [examples] tmpl="api.view.examples" /}}
+		</div>
+
+	</div>
+</script>
+
+<script type="jsrender" id="api.view.overload">
+
+	{{if #data.length}}
+	<div class="mod codeBg">
+		<div class="bd">
+			{{for #data}}
+			<div>
+				<h4 class="desc2 underline">
+					<strong>{{:name}}</strong>
+					<span>version added:{{:versionAdded}}</span>
+				</h4>
+
+				{{for parameters}}
+				<p class="parameter">
+					<strong>{{:name}}:</strong>
+					<span>{{:desc}}</span>
+				</p>
+				{{/for}}
+			</div>
+			{{/for}}
+		</div>
+	</div>
+	{{/if}}
+
+
+</script>
+
+<script type="jsrender" id="api.view.examples">
+	{{if #data.length}}
+	<h4>Examples:</h4>
+	{{for #data}}
+	<div>
+		<p>{{:desc}}</p>
+<pre data-sub="prettyprint:.;preview:_|{{:url}}" >
+{{:~htmlEncode(code)}}
+</pre>
+	</div>
+	{{/for}}
+	{{/if}}
+</script>

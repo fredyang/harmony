@@ -1,0 +1,82 @@
+<script type="jsrender" id="api.editExample.list">
+	<div data-sub="hideOnEdit:.">
+		<div class="toolbar">
+			<a class="imageLink icon-create icon" data-sub="newItem:.">New Example</a>
+		</div>
+
+		<table>
+			<col width="auto">
+			<col width="130px">
+			<tr>
+				<th class="txtL">Description</th>
+				<th>Actions</th>
+			</tr>
+
+			<tbody data-sub="listView:.|api.editExample.row;
+						     shadowEdit:. "/>
+
+			<tfoot>
+
+		</table>
+	</div>
+
+	<div data-sub="showOnEdit:.;
+	               for:/|api.editExample.form">
+	</div>
+
+</script>
+
+<script type="jsrender" id="api.editExample.row">
+	<tr>
+		<td>{{>desc}}</td>
+		<td>
+			<button title="Edit" data-sub="editRow:." class="icon-edit icon"></button>
+			<button title="Remove" data-sub="deleteRow:." class="icon-delete icon"></button>
+			<button title="Move up" data-sub="moveUpButton:." class="icon-up icon"></button>
+			<button title="Move down" data-sub="moveDownButton:." class="icon-down icon"></button>
+		</td>
+	</tr>
+</script>
+
+<script type="jsrender" id="api.editExample.form">
+	<table class="layout">
+		<col style="width:120px">
+		<tbody data-sub="ns:*edit.item;
+		                 forSelf:.">
+		<tr class="toolbar">
+			<td colspan="2">
+				<a class="imageLink icon-save icon" data-sub="checkValidity:.;
+				                                              saveButton:.">Save
+					Example</a>
+				<a class="imageLink icon-no icon" data-sub="cancelSaveButton:.">Cancel
+					Edit
+					Example</a>
+			</td>
+		</tr>
+
+		<tr>
+			<td>
+				<label>Description:</label>
+			</td>
+			<td>
+				<textarea class="s" type="text" data-sub="ns:desc;val:."/>
+			</td>
+		</tr>
+
+		<tr>
+			<td>
+				<label>Code:<br>(required)</label></td>
+			<td>
+				<textarea class="l" data-sub="required:.;val:code;warn:."/></td>
+		</tr>
+
+		<tr>
+			<td>
+				<label>url: (optional)</label></td>
+			<td>
+				<input type="text" data-sub="val:url"/>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</script>

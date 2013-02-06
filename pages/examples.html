@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title>Examples</title>
+	<script src="../ref/modernizr-2.6.2.min.js"></script>
+	<link href="doc.css" rel='stylesheet'/>
+
+</head>
+<body>
+<!--[if lt IE 7]>
+<p class="chrome">You are using an <strong>outdated</strong> browser. Please <a
+	href="http://browsehappy.com/">upgrade your browser</a> or <a
+	href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to
+	improve your experience.</p>
+<![endif]-->
+<div class="page fixedHead">
+	<div class="head  title NoTop">
+		<header>
+			<h1><a class="linkButton" href="../index.html">Harmony</a></h1>
+
+			<p>where model and view should live in</p>
+		</header>
+
+		<nav class="hlist">
+			<a href="../index.html" class="selected">Home</a>
+
+			<a href="doc.html">Documentation</a>
+			<a href="//github.com/fredyang/Harmony">Source on GitHub</a>
+
+		</nav>
+
+	</div>
+
+	<div class="transition">
+	</div>
+
+	<div class="body">
+		<div class="leftCol">
+
+			<div class="mod  ">
+				<div class="hd">
+					Introduction
+				</div>
+
+				<div class="bd">
+					<nav class="vlist">
+						<a href="../index.html">Get started</a>
+						<a href="Repository.html">Repository</a>
+						<a href="Subscription.html">Unified Subscription</a>
+						<a href="workflow.html">Workflow/activity</a>
+						<a href="template.html">Template</a>
+						<a href="examples.html">Examples</a>
+					</nav>
+				</div>
+			</div>
+
+
+		</div>
+
+		<div class="main">
+			<h2>Examples</h2>
+			<ol>
+				<li>
+					<a href="/fredyang/harmony/doc/doc.html">Documentation App</a>
+
+					<p>This is a single page application. All the content displayed is rendered
+						locally, this rendering starts for &lt;body /&gt; tags. All the templates
+						are external templates. You can edit and delete content, and new content.
+						All change are persisted locally. But it will not affect server side copy.
+						Just click "Undo all change" will reset all content to the server side copy.
+						You can send your change to me by following the following steps.
+					</p>
+
+					<ol>
+						<li>Open console of chrome developers tools, type <code>copy(hm("api.entries").toJSON())</code> </li>
+						<li>paste the content to the file <code>doc/doc-json.js</code> in source code.</li>
+						<li>commit and push change, and send me a pull request.</li>
+					</ol>
+
+				</li>
+
+				<li>
+					<a href="/fredyang/harmony/doc/doc.html">todos app</a>
+					<p>
+						This is popular application to evaluate client-side applications.
+						There are many implementation hosted at <a href="http://todomvc.com/">todomvc.com</a>.
+						The implementation of using Harmony comes with two version, the jsRender
+					</p>
+
+
+				</li>
+
+			</ol>
+		</div>
+	</div>
+
+	<div class="footer   title">
+		<p class="fR man">&copy; Fred Yang - <a href="http://semanticsworks.com">http://semanticsworks.com</a>
+		</p>
+	</div>
+</div>
+</div>
+<script src="../ref/jquery.js"></script>
+<script src="../ref/jsrender.js"></script>
+<script src="../ref/jquery.ba-bbq.min.js"></script>
+<script src="../download/harmony.debug.js"></script>
+<script src="../ref/matrix.min.js"></script>
+<script src="../assets/js/doc.js"></script>
+</body>
+</html>

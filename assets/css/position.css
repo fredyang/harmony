@@ -1,0 +1,100 @@
+/*add some positioning helper class*/
+/*don't overuse this helper class, it is for convenience hack, use it when you just need it handy,
+but don't use them in combination, in that case you should combine them in a class*/
+.ofA {
+	overflow: auto;
+}
+
+.fL {
+	float: left;
+}
+
+.fR {
+	float: right;
+}
+
+.pinTL {
+	top: 0;
+	left: 0;
+}
+
+.pinTR {
+	top: 0;
+	right: 0;
+}
+
+.pinT {
+	top:0;
+}
+
+.pinB {
+	bottom: 0;
+}
+
+.pinL {
+	left: 0;
+}
+
+.pinR {
+	right: 0;
+}
+
+.pinBL {
+	bottom: 0;
+	left: 0;
+}
+
+.pinBR {
+	bottom: 0;
+	right: 0;
+}
+
+.clearA {
+	clear: both;
+}
+
+.clearL {
+	clear:left;
+}
+
+.clearR {
+	clear: right;
+}
+
+.abs {
+	position: absolute;
+}
+
+.rel {
+	position: relative;
+}
+
+.fixed {
+	position: fixed;
+}
+/* horizontal alignment helper class*/
+/*center*/
+.txtC, table .txtC, table tr .txtC {
+	text-align: center;
+}
+
+.txtL, table .txtL, table tr .txtL {
+	text-align: left;
+}
+
+.txtR, table .txtR, table tr .txtR {
+	text-align: right;
+}
+
+/* vertical alignment */
+.txtT, table .txtT, table tr .txtT {
+	vertical-align: top;
+}
+
+.txtB, table .txtB, table tr .txtB {
+	vertical-align: bottom;
+}
+
+.txtM, table .txtM, table tr .txtM {
+	vertical-align: middle;
+}
