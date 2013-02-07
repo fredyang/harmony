@@ -5,6 +5,7 @@
 	} );
 
 	var ns = "api",
+		version = "2",
 		appNode,
 		getSubEntriesNode,
 		entriesNode,
@@ -19,11 +20,29 @@
 
 		buildRootModel: function( modelContainer, options ) {
 
-			var data = hm( modelContainer ).cd( "api.entries" ).getLocal();
+			var data = hm( modelContainer ).cd( ns ).getLocal( "entries" );
 
 			if (data) {
+				var localVersion = hm( modelContainer ).cd( ns ).getLocal( "version" );
 
-				return buildModel( data, modelContainer );
+				if (localVersion != version) {
+
+					var ok = confirm( "Document is updated at server, do you want download it? If yes," +
+					                  "your local document data including your change will be erased. If no, you have to" +
+					                  "manually refresh document data, and you will not be asked again util we have newer data." );
+					if (ok) {
+
+						return $.getJSON( "doc-json.js" ).done( function( data ) {
+							buildModel( data, modelContainer );
+							entriesNode.saveLocal();
+						} );
+
+					} else {
+						return buildModel( data, modelContainer );
+					}
+				} else {
+					return buildModel( data, modelContainer );
+				}
 
 			} else {
 
@@ -32,6 +51,12 @@
 					entriesNode.saveLocal();
 				} );
 			}
+
+		},
+
+		loadable: function() {
+			//insure only one instance is loaded
+			return this.instanceCount === 0;
 		}
 	} );
 
@@ -193,6 +218,8 @@
 
 			}
 		} );
+
+		appNode.cd( "version" ).set( version ).saveLocal();
 
 		function cascadeDelete ( entry, selectedEntryName ) {
 
