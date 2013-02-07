@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Wed Feb 6 14:52:14 2013 -0500
+  * Date: Thu Feb 7 17:07:01 2013 -0500
   */
 (function( $, window, undefined ) {
 	"use strict";
@@ -2914,7 +2914,7 @@
 	//
 	//unlike $().mapEvent("click", "y"), this method create a new event type for all
 	//jQuery object
-	hm.newViewEvent = function( event, base, condition ) {
+	hm.newViewEvent = function( event, baseEvent, condition ) {
 		if (isObject( event )) {
 			for (var key in event) {
 				hm.newViewEvent( key, event[key][0], event[key][1] );
@@ -2922,7 +2922,7 @@
 			return this;
 		}
 		var handler = function( e ) {
-			if (condition === true || condition( e )) {
+			if (condition === true || condition.call( this, e )) {
 				$( e.target ).trigger( extend( {}, e, {
 					type: event,
 					currentTarget: e.target
@@ -2936,10 +2936,10 @@
 
 		$.event.special[event] = {
 			setup: function() {
-				$( this ).bind( base, handler );
+				$( this ).bind( baseEvent, handler );
 			},
 			teardown: function() {
-				$( this ).unbind( base, handler );
+				$( this ).unbind( baseEvent, handler );
 			}
 		};
 		return this;
@@ -4524,7 +4524,7 @@
 		],
 
 		del: [
-			"$click:.|*del",
+			"$click:.|*del;confirm:_|_Do you want to delete this item?",
 
 			function( /*e*/ ) {
 				this.del();

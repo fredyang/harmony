@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Wed Feb 6 14:52:14 2013 -0500
+  * Date: Thu Feb 7 17:07:01 2013 -0500
   */
 (function( $, window, undefined ) {
 	"use strict";
@@ -2866,7 +2866,7 @@
 	//
 	//unlike $().mapEvent("click", "y"), this method create a new event type for all
 	//jQuery object
-	hm.newViewEvent = function( event, base, condition ) {
+	hm.newViewEvent = function( event, baseEvent, condition ) {
 		if (isObject( event )) {
 			for (var key in event) {
 				hm.newViewEvent( key, event[key][0], event[key][1] );
@@ -2874,7 +2874,7 @@
 			return this;
 		}
 		var handler = function( e ) {
-			if (condition === true || condition( e )) {
+			if (condition === true || condition.call( this, e )) {
 				$( e.target ).trigger( extend( {}, e, {
 					type: event,
 					currentTarget: e.target
@@ -2888,10 +2888,10 @@
 
 		$.event.special[event] = {
 			setup: function() {
-				$( this ).bind( base, handler );
+				$( this ).bind( baseEvent, handler );
 			},
 			teardown: function() {
-				$( this ).unbind( base, handler );
+				$( this ).unbind( baseEvent, handler );
 			}
 		};
 		return this;
@@ -4384,7 +4384,7 @@
 		],
 
 		del: [
-			"$click:.|*del",
+			"$click:.|*del;confirm:_|_Do you want to delete this item?",
 
 			function( /*e*/ ) {
 				this.del();
@@ -5324,7 +5324,15 @@
 						};
 					}
 				} else if (isObject( options )) {
+
 					handler.options = options;
+
+				} else if (!isUndefined( options )) {
+
+					handler.options = {
+						fixedValue: options
+					};
+
 				} else {
 					throw "missing options in fixedValue validator";
 				}
@@ -6378,11 +6386,11 @@
 		newShadowItem: "*skipGet newShadowItem",
 
 		//$click:item|*editShadowItem
-		//$edit:items|*editShadowItem
-		//$edit:items*queryResult|*editShadowItem
+		//$editRow:items|*editShadowItem
+		//$editRow:items*queryResult|*editShadowItem
 		editShadowItem: function( e ) {
-			if (e.type == "edit") {
-				//this trigger but editRow button
+			if (e.type == "editRow") {
+				//this trigger by edit button
 				this.editShadowItem( null, e.selectedRowIndex() );
 			} else {
 				if (this.path.endsWith( ".edit.item" )) {
@@ -6480,8 +6488,8 @@
 		// shadowEdit:items|rowTemplateId or
 		// shadowEdit:items*queryResult|rowTemplateId
 		shadowEdit: "!init:.|initShadowEdit *skipSet;" +
-		            "$delete:.|*removeItem;" +
-		            "$edit:.|*editShadowItem",
+		            "deleteRow:.;" +
+		            "$editRow:.|*editShadowItem",
 
 		// shadowEditInRow:items|updateRowTemplateId or
 		// shadowEditInRow:items*queryResult|updateRowTemplateId
@@ -6489,6 +6497,8 @@
 		                 "!beginInRowUpdate:.|*renderUpdateRowView;" +
 		                 "!cancelInRowUpdate:.|*destroyUpdateRowView",
 
+		deleteRow: "$deleteRow:.|*confirm|_Do you want to delete this item?;" +
+		           "$deleteRow:.|*removeItem;",
 		//movableRow:items
 		movableRow: "$moveUp:.|*moveUpItem;" +
 		            "$moveDown:.|*moveDownItem;",
@@ -6533,12 +6543,6 @@
 			} );
 		},
 
-		//editRow:_ (path is ignored)
-		editRow: "mapClick:_|edit",
-
-		//deleteRow:_ (path is ignored)
-		deleteRow: "confirm:_|Do you want to delete this item?;mapClick:_|delete;",
-
 		//newItem:items
 		//newItem:items*queryResult
 		newItem: "$click:.|*newShadowItem;" +
@@ -6548,11 +6552,6 @@
 		//this is only used non-array item edit
 		editObject: "$click:.|*editShadowItem;hideOnEdit:.",
 
-		//moveUpButton:_ (path is ignored)
-		moveUpButton: "mapClick:_|moveUp",
-
-		//moveDownButton:_ (path is ignored)
-		moveDownButton: "mapClick:_|moveDown",
 
 		//saveButton:items*edit.item
 		//saveButton:items*queryResult*edit.item
@@ -6562,6 +6561,26 @@
 		//cancelSaveButton:items*queryResult*edit.item
 		cancelSaveButton: "$click:.|*resetShadowItem"
 
+	} );
+
+	hm.newViewEvent( {
+
+		editRow: ["click", function( e ) {
+			return $( e.target ).hasClass( "editRow" );
+		}],
+
+		deleteRow: ["click", function( e ) {
+			return $( e.target ).hasClass( "deleteRow" );
+
+		}],
+
+		moveUp: ["click", function( e ) {
+			return $( e.target ).hasClass( "moveUp" );
+		}],
+
+		moveDown: ["click", function( e ) {
+			return $( e.target ).hasClass( "moveDown" );
+		}]
 	} );
 
 //

@@ -14,7 +14,7 @@ if (!matrix.baseUrl) {
 	matrix.baseUrl = "../assets/";
 }
 
-matrix.hash( 1 );
+matrix.hash( 6 );
 
 matrix( true,
 	"prettify/prettify.css," +
@@ -60,6 +60,9 @@ $( function() {
 } );
 
 hm.groups.prettyprint = function( elem, path, subscriptions, options ) {
-	//debugger;
 	$( elem ).html( prettyPrintOne( $( elem ).html() ) ).addClass( "code" );
 };
+
+hm.groups.linkOut = function (elem, path, group, options) {
+	$( elem ).find("a" ).attr("target", "_blank");
+}

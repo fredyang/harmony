@@ -7,12 +7,11 @@
 			<th class="txtL">Full Name</th>
 		</tr>
 		<tbody data-sub="listView:.|api.editApi.row;
-		                 $moveUp:.|*moveUpItem;
-						 $moveDown:.|*moveDownItem;
+		                 movableRow:.;
 						 $review:/api.handlers.review;
-						 $edit:/api.handlers.edit;
+						 $editRow:/api.handlers.edit;
 						 !updateFullName.1:.|*updateRowView|api.editApi.row;
-						 $delete:/api.handlers.remove;
+						 $deleteRow:/api.handlers.remove;
 						 tabContainer:/api.selectedEntryName|apiList">
 
 		</tbody>
@@ -105,14 +104,14 @@
 <script type="jsrender" id="api.editApi.row">
 	<tr data-tabView="{{:~getEntryFullName(#data)}}" data-tabGroup="apiList">
 		<td>
-			<button class="icon-edit icon" data-sub="editRow:." title="Edit"></button>
-			<button class="icon-delete icon" data-sub="deleteRow:."
+			<button class="icon-edit icon editRow" title="Edit"></button>
+			<button class="icon-delete icon deleteRow"
 			        title="Delete"></button>
-			<button class="icon-review icon" data-sub="mapClick:.|review"
+			<button class="icon-review icon review"
 			        title="Review"></button>
-			<button class="icon-up icon" data-sub="moveUpButton:."
+			<button class="icon-up icon" class="moveUp"
 			        title="Move up"></button>
-			<button class="icon-down icon" data-sub="moveDownButton:."
+			<button class="icon-down icon" class="moveDown"
 			        title="Move down"></button>
 		</td>
 		<td>{{:~getEntryFullName(#data)}}</td>

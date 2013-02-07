@@ -118,7 +118,7 @@ table.layout > tbody > * > th
 
 .tree {
     max-height: 700px;
-	overflow-y: scroll;
+	/*overflow-y: scroll;*/
 	margin: 0 !important;
 }
 div[data-tabView] {

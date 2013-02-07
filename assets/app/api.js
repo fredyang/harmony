@@ -1,5 +1,9 @@
 (function() {
 
+	hm.newViewEvent( "review", "click", function( e ) {
+		return $( e.target ).hasClass( "review" );
+	} );
+
 	var ns = "api",
 		appNode,
 		getSubEntriesNode,
@@ -91,7 +95,7 @@
 
 			apiAction: apiActionNode.getLocal() || "view",
 
-			selectedEntryName: selectedEntryNameNode.getLocal() || "",
+			selectedEntryName: selectedEntryNameNode.getLocal() || "Home",
 
 			//this depends on selectedEntryName node
 			//so when selectedEntryName change selectedEntry will automatically change

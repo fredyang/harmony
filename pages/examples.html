@@ -68,37 +68,122 @@
 
 		<div class="main">
 			<h2>Examples</h2>
-			<ol>
-				<li>
-					<a href="/fredyang/harmony/doc/doc.html">Documentation App</a>
-
-					<p>This is a single page application. All the content displayed is rendered
-						locally, this rendering starts for &lt;body /&gt; tags. All the templates
-						are external templates. You can edit and delete content, and new content.
-						All change are persisted locally. But it will not affect server side copy.
-						Just click "Undo all change" will reset all content to the server side copy.
-						You can send your change to me by following the following steps.
-					</p>
-
-					<ol>
-						<li>Open console of chrome developers tools, type <code>copy(hm("api.entries").toJSON())</code> </li>
-						<li>paste the content to the file <code>doc/doc-json.js</code> in source code.</li>
-						<li>commit and push change, and send me a pull request.</li>
-					</ol>
-
-				</li>
+			<ol data-sub="linkOut:_">
 
 				<li>
-					<a href="http://jsbin.com/ocivok/1/edit">todos with jsrender</a>  and <a href="http://jsbin.com/ocivok/2/edit">todos with handlebar.js</a>
+					<a href="http://jsbin.com/ocivok/1/edit">todos with jsrender</a> and <a
+					href="http://jsbin.com/ocivok/2/edit">todos with handlebar.js</a>
+
 					<p>
 						This is popular application to evaluate JavaScript MV* framework.
 						There are many implementations hosted at <a href="http://todomvc.com/">todomvc.com</a>.
-            These two implementations use the same model, but there are some small differences in the view,
-            because the syntaxs of two template engines are different. Feel free to compare these two
-            with other implementations in <a href="http://todomvc.com/">todomvc.com</a>.
+						These two versions use the same model. The difference is the syntax of the
+						template markup.
 
 					</p>
 				</li>
+
+				<li>
+					<a href="/fredyang/harmony/doc/doc.html">Documentation of Harmony</a>
+
+					<p>This is a single page application implemented with Harmony. All the content
+						displayed is rendered locally, this rendering starts for &lt;body /&gt;
+						tags. All the templates are external templates. You can edit the content,
+						and new content.
+					</p>
+				</li>
+
+
+				<li>
+					<a href="http://jsbin.com/uwanuq/1/edit">Hello world with programmatic
+						subscriptions</a> and
+					<a href="http://jsbin.com/igaqoh/1/edit">Hello world with declarative
+						subscriptions</a>
+
+					<p></p>
+				</li>
+
+				<li>
+					<a href="http://jsbin.com/ozuton/4/edit">Click count with programmatic
+						subscriptions</a> and
+					<a href="http://jsbin.com/uyizin/1/edit">Click count with declarative
+						subscriptions</a>
+
+					<p>
+						Implementation of <a
+						href="http://knockoutjs.com/examples/clickCounter.html">click counter of
+						knockoutjs</a>
+					</p>
+
+				</li>
+
+
+				<li>
+					<a href="http://jsbin.com/okokab/1/edit?live,javascript,html#/okokab/2/edit">Editable
+						Grid</a>
+
+					<p>
+						This is a spread sheet like grid. You can insert,update,delete, rows and
+						cell. For more see <a
+						href="/fredyang/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=plugins.table">hm.table()</a>
+					</p>
+				</li>
+
+				<li>
+					<a href="http://jsbin.com/ehujax/7/edit">ListView</a>
+
+					<p>
+						There are two view for an array, one can be queried/sort/page, one is simple
+						list view. They both can respond to the change of data. For more see <a
+						href="/fredyang/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=plugins.listView">ListView</a>
+					</p>
+				</li>
+
+				<li>
+					<a href="http://jsbin.com/edodig/3/edit">Typed Objects</a>
+
+					<p>
+						This demos shows a collection of "strongly typed" object displayed in a
+						table. For more see <a
+						href="/fredyang/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Class">hm.Class</a>
+					</p>
+				</li>
+
+				<li>
+					<a href="http://jsbin.com/ocabor/6/edit">Editable ListView</a>
+
+					and
+
+					<a href="http://jsbin.com/etacob/5/edit">Editable ListView (in row edit)</a>
+
+					<p>
+						For more see, <a
+						href="/fredyang/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=plugins.shadowEdit">ShadowEdit</a>
+					</p>
+				</li>
+
+				<li>
+					<a href="http://jsbin.com/ejulal/2/edit">Input widgets with no validations</a>
+					and
+					<a href="http://jsbin.com/ehoyuw/1/edit">Input widgets with validations</a>
+
+					<p>
+						All input widgets can be "bound" to model with a subscription group <code>val</code>.
+						For more see <a
+						href="/fredyang/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.value+adapter">value
+						adapter</a>.
+
+						Validation a subscription of model, it is used to validate the change of
+						model but not view. For more see
+						<a href="/fredyang/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=plugins.validation">Validation</a>.
+					</p>
+				</li>
+
+				<li>
+					<a href="http://jsbin.com/ujapev/5/edit">Builtin Validations</a>
+				</li>
+
+
 			</ol>
 		</div>
 	</div>

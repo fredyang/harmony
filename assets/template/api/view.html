@@ -46,12 +46,14 @@
 		</div>
 
 		{{if ( longDesc ) }}
-			<div class="mod  mtl mbl ">
+			<div class="mod mtl mbl ">
+				{{if signatures.length}}
 				<div class="hd">
 					<h3>
 						Overview
 					</h3>
 				</div>
+				{{/if}}
 				<div class="bd">
 					{{:longDesc}}
 				</div>
@@ -65,13 +67,11 @@
 
 <script type="jsrender" id="api.view.breadcrumb">
 
-	Categories:
 	{{if #data.length}}
+		Categories:
 		{{for #data}}
 			<a class="namespace" data-sub="$click:selectedEntryName|*hardCode|{{:fullName}}">{{:name}}</a>
 		{{/for}}
-	{{else}}
-		Root
 	{{/if}}
 </script>
 
@@ -84,7 +84,7 @@
 				<span>Returns:{{:returns}}</span>
 			</h3>
 		</div>
-		<div class="bd vlist">
+		<div class="bd">
 			{{if (shortDesc) }}
 			<p class="desc">
 				<strong>Description:</strong>
@@ -110,7 +110,7 @@
 	<div class="mod codeBg">
 		<div class="bd">
 			{{for #data}}
-			<div>
+			<div class="pam">
 				<h4 class="desc2 underline">
 					<strong>{{:name}}</strong>
 					<span>version added:{{:versionAdded}}</span>
