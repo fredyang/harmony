@@ -73,7 +73,7 @@
 				minimum 1 activity ("get") and max 5 activities ("initialize", "get",
 				"convert", "set", "finalize"). Each activity is a function, the "get" activity and
 				"convert" activity can be <a
-					href="/fredyang/harmony/doc/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Handler.Async+handler">asynchronous</a>
+					href="/harmony/doc/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Handler.Async+handler">asynchronous</a>
 				, as long as they return a jQuery promise. When Harmony executes a workflow, it
 				execute the functions in sequence and pass the result of previous function to next
 				one as input. <strong>The reason to use workflow and activity is to increase code
@@ -83,7 +83,7 @@
 			<p>
 				The de-composability of workflow into activities and composability of actvities to
 				workflow is based on following facts mentioned in <a
-				href="/fredyang/harmony/doc/Subscription.html"> Unified Subscription.
+				href="/harmony/doc/Subscription.html"> Unified Subscription.
 			</a>
 			</p>
 
@@ -100,7 +100,7 @@
 
 			<p>
 
-				In <a href="/fredyang/harmony/doc/Subscription.html">Unified Subscription</a>, we
+				In <a href="/harmony/doc/Subscription.html">Unified Subscription</a>, we
 				have a <a href="http://jsbin.com/iqopeb/1">programmatic subscription example</a>, it
 				use several function handlers, which can be decomposed into the following
 				activities.
@@ -150,7 +150,7 @@ function (e) {
 			<p>
 				<strong>Composability</strong> is also heavily used in declarative subscriptions. In
 				the following, we create a <a
-				href="/fredyang/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Handler.workflow+type">workflow
+				href="/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Handler.workflow+type">workflow
 				type</a> <code>slideDown</code>, and then create a <a
 				href="http://code.semanticsworks.com/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Declarative.Subscription+group">subscription
 				group</a> by composing two subscription, one composed by
