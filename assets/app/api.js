@@ -29,7 +29,7 @@
 
 					var ok = confirm( "Document is updated at server, do you want download it? If yes," +
 					                  "your local document data including your change will be erased. If no, you have to" +
-					                  "manually refresh document data, and you will not be asked again util we have newer data." );
+					                  "manually refresh document data, and you will not be asked again until we have newer data." );
 					if (ok) {
 
 						return $.getJSON( "doc-json.js" ).done( function( data ) {
