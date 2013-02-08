@@ -146,13 +146,18 @@
 					} ).get();
 			},
 
+			//expandTree: true,
+
 			handlers: {
 
 				//handler of delete button on tool bar
 				deleteSelected: function( e ) {
-					var selectedEntry = selectedEntryNode.get();
-					cascadeDelete( selectedEntry, selectedEntryNameNode.get() );
-					refreshTree();
+					var ok = confirm( "Do you want to delete this entry?" );
+					if (ok) {
+						var selectedEntry = selectedEntryNode.get();
+						cascadeDelete( selectedEntry, selectedEntryNameNode.get() );
+						refreshTree();
+					}
 				},
 
 				//handler of undo button on tool bar
@@ -175,10 +180,10 @@
 					} );
 				},
 
-				//view handler for event $toggleExpander
+				//view handler for event $toggleSubtree
 				//seems that this violate principle that
 				//the view handler should not modify view
-				toggleExpander: function( e ) {
+				toggleSubtree: function( e ) {
 					var $button = e.originalPublisher;
 					if ($button.is( "a" )) {
 						$button = $button.prev();
@@ -204,10 +209,13 @@
 				},
 
 				remove: function( e ) {
-					var deletedEntry = entriesNode.get( e.selectedRowIndex() );
-					var selectedEntryName = selectedEntryNameNode.get();
-					cascadeDelete( deletedEntry, selectedEntryName );
-					refreshTree();
+					var ok = confirm( "Do you want to delete this entry?" );
+					if (ok) {
+						var deletedEntry = entriesNode.get( e.selectedRowIndex() );
+						var selectedEntryName = selectedEntryNameNode.get();
+						cascadeDelete( deletedEntry, selectedEntryName );
+						refreshTree();
+					}
 				},
 
 				cancelEdit: function( e ) {

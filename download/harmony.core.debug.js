@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Thu Feb 7 18:53:04 2013 -0500
+  * Date: Thu Feb 7 23:03:54 2013 -0500
   */
 (function( $, window, undefined ) {
 	"use strict";
@@ -4315,10 +4315,41 @@
 			"!init after*:.|*toggleClass", {
 
 				get: function( e ) {
+					var method,
+						reverse,
+						value = e.publisher.get(),
+						className = e.workflow.options;
+
+					if (className) {
+						if (className.startsWith( "!" )) {
+							reverse = true;
+							className = className.substr( 1 );
+						}
+
+						method = value ^ reverse ? "addClass" : "removeClass";
+					}
+
 					if (e.type == "init") {
-						this.addClass( e.publisher.get() );
+
+						if (className) {
+
+							this[method]( className );
+
+						} else {
+
+							this.addClass( value );
+						}
+
 					} else {
-						this.removeClass( e.removed ).addClass( e.proposed );
+						if (className) {
+
+							this[method]( className );
+
+						} else {
+
+							this.removeClass( e.removed ).addClass( value );
+
+						}
 					}
 				}
 			}

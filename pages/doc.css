@@ -3,6 +3,7 @@
 p, textarea, .p * {
 	line-height: 1.7 !important;
 }
+
 .highlight {
 	background-color: #e6ff93;
 }
@@ -95,16 +96,17 @@ table {
 table.layout {
 	border: none;
 }
+
 th {
 	text-align: left;
 }
+
 td {
 	vertical-align: top;
 }
 
 table.layout > tbody > * > td,
-table.layout > tbody > * > th
-{
+table.layout > tbody > * > th {
 	border: none;
 }
 
@@ -117,10 +119,15 @@ table.layout > tbody > * > th
 }
 
 .tree {
-    max-height: 700px;
-	/*overflow-y: scroll;*/
+	max-height: 700px;
 	margin: 0 !important;
+	overflow-y: scroll;
 }
+
+.treeOverflow {
+	overflow-y: scroll;
+}
+
 div[data-tabView] {
 	display: none;
 }
@@ -140,6 +147,7 @@ div[data-tabView].selected {
 	overflow: hidden;
 	background-repeat: no-repeat;
 }
+
 .ui-icon-plus {
 	background-position: -16px -128px;
 }
@@ -148,11 +156,9 @@ div[data-tabView].selected {
 	background-position: -48px -128px;
 }
 
-
 .ui-icon-blank {
 	background-position: -80px -240px;
 }
-
 
 /*icon*/
 
@@ -163,8 +169,8 @@ div[data-tabView].selected {
 	/*background-size: 100%;*/
 	margin-right: 5px;
 	background-repeat: no-repeat;
+	cursor: hand;
 }
-
 
 .icon-move {
 	background-image: url(../assets/css/image/Move.png);
@@ -206,7 +212,15 @@ div[data-tabView].selected {
 	background-image: url("../assets/css/image/No.png");
 }
 
-td input[type=text], td textarea{
+.icon-expand {
+	background-image: url("../assets/css/image/expand.jpg");
+}
+
+.icon-collapse {
+	background-image: url("../assets/css/image/collapse.jpg");
+}
+
+td input[type=text], td textarea {
 	width: 100%;
 }
 
@@ -227,7 +241,7 @@ td input[type=text], td textarea{
 }
 
 td[colspan] > table,
-td[colspan] > div{
+td[colspan] > div {
 	margin-top: 10px;
 }
 

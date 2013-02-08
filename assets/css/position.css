@@ -1,6 +1,9 @@
 /*add some positioning helper class*/
 /*don't overuse this helper class, it is for convenience hack, use it when you just need it handy,
 but don't use them in combination, in that case you should combine them in a class*/
+.bloc {
+	display: block;
+}
 .ofA {
 	overflow: auto;
 }

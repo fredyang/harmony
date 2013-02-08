@@ -33,12 +33,17 @@
 					<div class="hd">
 						Documentation
 
+<!--
+						<button data-sub="hide:expandTree;true:expandTree" class="fR bloc icon icon-expand"></button>
+						<button data-sub="show:expandTree;false:expandTree" class="fR bloc icon icon-collapse"></button>
 
+						toggleClass:expandTree|!treeOverflow
+-->
 					</div>
 
 					<div class="bd tree">
 						<ul class="nav-v" data-sub="!init nameChanged:getSubEntries|*renderContent|api.view.categoryTree;
-											        $toggleExpander:/api.handlers.toggleExpander;
+											        $toggleSubtree:/api.handlers.toggleSubtree;
 											        !afterUpdate:selectedEntryName|#/api.handlers.expandParentNodeForSelectedEntry;
 													tabContainer:selectedEntryName">
 						</ul>
@@ -67,8 +72,7 @@
 					<a data-tabLink="view" data-tabGroup="action">View</a>
 					<a data-tabLink="edit" data-tabGroup="action">Edit</a>
 
-					<a data-sub="confirm:_|Are you sure to delete this?;
-								$click:/api.handlers.deleteSelected">
+					<a data-sub="$click:/api.handlers.deleteSelected">
 
 						Delete</a>
 					<a data-tabLink="list" data-tabGroup="action">List</a>

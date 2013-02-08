@@ -9,10 +9,10 @@
 		{{if #ctx.subEntries.length}}
 
 			<span class="button ui-icon {{:~getExpanderClass(#data)}} fL right10"
-			      data-sub="mapClick:.|toggleExpander">&nbsp;</span>
+			      data-sub="mapClick:.|toggleSubtree">&nbsp;</span>
 
 			<a data-tabLink="{{:~getEntryFullName(#data)}}"
-			   data-sub="mapEvent:.|dblclick,toggleExpander">{{:name}}</a>
+			   data-sub="mapEvent:.|dblclick,toggleSubtree">{{:name}}</a>
 
 			<ul {{:~getSubEntryStyle(#data)}} >
 				{{for ~subEntries tmpl="api.view.categoryTree" /}}
