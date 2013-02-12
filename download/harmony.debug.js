@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Mon Feb 11 21:46:34 2013 -0500
+  * Date: Mon Feb 11 21:56:51 2013 -0500
   */
 (function($, window, undefined) {
 	"use strict";
@@ -3797,7 +3797,7 @@
 
 	var Handlebars = window.Handlebars;
 
-	if (isUndefined( Handlebars )) {
+	if (!isUndefined( Handlebars )) {
 
 		hm.template.engineAdapter( "handlebars", {
 
