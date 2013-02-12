@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Mon Feb 11 21:59:10 2013 -0500
+  * Date: Mon Feb 11 22:00:46 2013 -0500
   */
 (function($, window, undefined) {
 	"use strict";
@@ -5659,7 +5659,7 @@
 
 
 
-	if (isUndefined( matrix )) {
+	if (!isUndefined( matrix )) {
 
 		template.load = function(templateId) {
 			return matrix( templateId + ".template" );
