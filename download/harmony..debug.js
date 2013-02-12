@@ -3,25 +3,34 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Thu Feb 7 23:03:54 2013 -0500
+  * Date: Mon Feb 11 21:46:34 2013 -0500
   */
-(function( $, window, undefined ) {
+(function($, window, undefined) {
 	"use strict";
 
+	/*jshint smarttabs:true, evil:true, expr:true, newcap: false, validthis: true */
 	/**
 	 * a wrapper over a Node constructor,
 	 * [value] is optional
 	 */
-	var hm = window.hm = function( path, value ) {
+	var hm = window.hm = function(path, value) {
 			return new Node( path, value );
 		},
-		Node = function( path, value ) {
+		Node = function(path, value) {
 			path = path || "";
 			this.path = toPhysicalPath( path, true /* create shadow if necessary */ );
 			if (!isUndefined( value )) {
 				this.set( value );
 			}
 		},
+		document = window.document,
+		localStorage = window.localStorage,
+		setTimeout = window.setTimeout,
+		history = window.history,
+		location = window.location,
+		alert = window.alert,
+		confirm = window.confirm,
+		matrix = window.matrix,
 		hmFn,
 		extend = $.extend,
 		repository = {},
@@ -97,7 +106,7 @@
 	//#end_debug
 
 
-	function augment ( prototype, extension ) {
+	function augment (prototype, extension) {
 		for (var key in extension) {
 			if (!prototype[key]) {
 				prototype[key] = extension[key];
@@ -106,7 +115,7 @@
 	}
 
 	augment( arrayPrototype, {
-		indexOf: function( obj, start ) {
+		indexOf: function(obj, start) {
 			for (var i = (start || 0); i < this.length; i++) {
 				if (this[i] == obj) {
 					return i;
@@ -115,11 +124,11 @@
 			return -1;
 		},
 
-		contains: function( item ) {
+		contains: function(item) {
 			return (this.indexOf( item ) !== -1);
 		},
 
-		remove: function( item ) {
+		remove: function(item) {
 			var position = this.indexOf( item );
 			if (position != -1) {
 				this.splice( position, 1 );
@@ -127,19 +136,19 @@
 			return this;
 		},
 
-		removeAt: function( index ) {
+		removeAt: function(index) {
 			this.splice( index, 1 );
 			return this;
 		},
 
-		pushUnique: function( item ) {
+		pushUnique: function(item) {
 			if (!this.contains( item )) {
 				this.push( item );
 			}
 			return this;
 		},
 
-		merge: function( items ) {
+		merge: function(items) {
 			if (items && items.length) {
 				for (var i = 0; i < items.length; i++) {
 					this.pushUnique( items[i] );
@@ -149,7 +158,7 @@
 		},
 		//it can be sortObject()
 		//sortObject(by)
-		sortObject: function( by, asc ) {
+		sortObject: function(by, asc) {
 			if (isUndefined( asc )) {
 				if (isUndefined( by )) {
 					asc = true;
@@ -165,7 +174,7 @@
 			}
 
 			if (by) {
-				this.sort( function( a, b ) {
+				this.sort( function(a, b) {
 					var av = a[by];
 					var bv = b[by];
 					if (av == bv) {
@@ -182,25 +191,25 @@
 	} );
 
 	augment( stringPrototype, {
-		startsWith: function( text ) {
+		startsWith: function(text) {
 			return this.indexOf( text ) === 0;
 		},
-		contains: function( text ) {
+		contains: function(text) {
 			return this.indexOf( text ) !== -1;
 		},
-		endsWith: function( suffix ) {
+		endsWith: function(suffix) {
 			return this.indexOf( suffix, this.length - suffix.length ) !== -1;
 		},
-		supplant: function( obj ) {
+		supplant: function(obj) {
 			return this.replace( rSupplant,
-				function( a, b ) {
+				function(a, b) {
 					var r = obj[b];
 					return typeof r ? r : a;
 				} );
 		},
 		format: function() {
 			var source = this;
-			$.each( arguments, function( index, value ) {
+			$.each( arguments, function(index, value) {
 				source = source.replace( new RegExp( "\\{" + index + "\\}", "g" ), value );
 			} );
 			return source;
@@ -220,7 +229,7 @@
 		//
 		//does not support the following, as will be implemented as get((subPath = p1), p2)
 		//get(p1, p2)
-		get: function( subPath /*, p1, p2, .. for parameters of model functions*/ ) {
+		get: function(subPath /*, p1, p2, .. for parameters of model functions*/) {
 
 			var currentValue, accessor = this.accessor( subPath, true );
 
@@ -255,7 +264,7 @@
 			return JSON.stringify( this.get.apply( this, slice.call( arguments ) ) );
 		},
 
-		raw: function( subPath, value ) {
+		raw: function(subPath, value) {
 			var accessor;
 			if (isFunction( subPath )) {
 				value = subPath;
@@ -282,10 +291,10 @@
 		//the function context is bound to current proxy's parent
 		//what is different for get function is that, set will return a proxy
 		//and get will return the result of the function
-		set: function( force, subPath, value ) {
+		set: function(force, subPath, value) {
 			//allow set(path, undefined)
 			if (arguments.length == 1) {
-				if (this.path == "") {
+				if (this.path === "") {
 					throw "root object can not changed";
 				} else {
 					rootNode.set( this.path, force, subPath );
@@ -322,7 +331,7 @@
 			}
 		},
 
-		accessor: function( subPath, readOnly /*internal use only*/ ) {
+		accessor: function(subPath, readOnly /*internal use only*/) {
 			//if it is not readOnly, and access out of boundary, it will throw exception
 			if (subPath === 0) {
 				subPath = "0";
@@ -373,7 +382,7 @@
 			};
 		},
 
-		create: function( force, subPath, value, accessor /* accessor is used internally */ ) {
+		create: function(force, subPath, value, accessor /* accessor is used internally */) {
 
 			if (!isBoolean( force )) {
 				accessor = value;
@@ -424,7 +433,7 @@
 			return this;
 		},
 
-		extend: function( subPath, object ) {
+		extend: function(subPath, object) {
 			var newModel;
 			if (!object) {
 				object = subPath;
@@ -443,10 +452,10 @@
 		//update(subPath, value)
 		//most of the time force is not used, by default is it is false
 		//by in case you want to bypass validation you can explicitly set to true
-		update: function( force, subPath, value, accessor ) {
+		update: function(force, subPath, value, accessor) {
 
 			if (arguments.length == 1) {
-				if (this.path == "") {
+				if (this.path === "") {
 					throw "root object can not updated";
 				} else {
 					rootNode.update( this.path, force );
@@ -495,7 +504,7 @@
 			return this;
 		},
 
-		del: function( subPath ) {
+		del: function(subPath) {
 			if (isUndefined( subPath )) {
 				if (this.path) {
 					return rootNode.del( this.path );
@@ -531,7 +540,7 @@
 			return removedValue;
 		},
 
-		createIfUndefined: function( subPath, value ) {
+		createIfUndefined: function(subPath, value) {
 			if (isUndefined( value )) {
 				throw "missing value argument";
 			}
@@ -542,12 +551,12 @@
 		},
 
 		//navigation methods
-		pushStack: function( newNode ) {
+		pushStack: function(newNode) {
 			newNode.previous = this;
 			return newNode;
 		},
 
-		cd: function( relativePath ) {
+		cd: function(relativePath) {
 			return this.pushStack( hm( this.getPath( relativePath ) ) );
 		},
 
@@ -559,7 +568,7 @@
 			return this.cd( "*" );
 		},
 
-		sibling: function( path ) {
+		sibling: function(path) {
 			return this.cd( ".." + path );
 		},
 
@@ -569,18 +578,18 @@
 		},
 
 		//--------------path methods---------------
-		getPath: function( subPath ) {
+		getPath: function(subPath) {
 			//join the context and subPath together, but it is still a logical path
 			return mergePath( this.path, subPath );
 		},
 
 		//to get the logicalPath of current model, leave subPath empty
-		logicalPath: function( subPath ) {
+		logicalPath: function(subPath) {
 			return toLogicalPath( this.getPath( subPath ) );
 		},
 
 		//to get the physicalPath of current model, leave subPath empty
-		physicalPath: function( subPath ) {
+		physicalPath: function(subPath) {
 			return toPhysicalPath( this.getPath( subPath ) );
 		},
 
@@ -593,7 +602,7 @@
 		},
 
 		//call the native method of the wrapped value
-		invoke: function( methodName /*, p1, p2, ...*/ ) {
+		invoke: function(methodName /*, p1, p2, ...*/) {
 			if (arguments.length === 0) {
 				throw "methodName is missing";
 			}
@@ -603,15 +612,15 @@
 		},
 
 		//region array methods
-		indexOf: function( item ) {
+		indexOf: function(item) {
 			return this.get().indexOf( item );
 		},
 
-		contains: function( item ) {
+		contains: function(item) {
 			return (this.indexOf( item ) !== -1);
 		},
 
-		first: function( fn ) {
+		first: function(fn) {
 			return fn ? this.filter( fn )[0] : this.get( "0" );
 		},
 
@@ -620,18 +629,18 @@
 			return value[value.length - 1];
 		},
 
-		push: function( item ) {
+		push: function(item) {
 			return this.create( this.get().length, item );
 		},
 
-		pushRange: function( items ) {
+		pushRange: function(items) {
 			for (var i = 0; i < items.length; i++) {
 				this.push( items[i] );
 			}
 			return this;
 		},
 
-		pushUnique: function( item ) {
+		pushUnique: function(item) {
 			return !this.contains( item ) ?
 				this.push( item ) :
 				this;
@@ -645,23 +654,23 @@
 			return this.del( 0 );
 		},
 
-		unshift: function( item ) {
+		unshift: function(item) {
 			return this.create( 0, item );
 		},
 
-		insertAt: function( index, item ) {
+		insertAt: function(index, item) {
 			return this.create( index, item );
 		},
 
-		updateAt: function( index, item ) {
+		updateAt: function(index, item) {
 			return this.update( index, item );
 		},
 
-		removeAt: function( index ) {
+		removeAt: function(index) {
 			return this.del( index );
 		},
 
-		move: function( fromIndex, toIndex ) {
+		move: function(fromIndex, toIndex) {
 			var count = this.count();
 
 			if (fromIndex !== toIndex &&
@@ -675,7 +684,7 @@
 			return this;
 		},
 
-		replaceItem: function( oldItem, newItem ) {
+		replaceItem: function(oldItem, newItem) {
 			if (oldItem == newItem) {
 				return this;
 			}
@@ -688,12 +697,12 @@
 			return this;
 		},
 
-		removeItem: function( item ) {
+		removeItem: function(item) {
 			var index = this.indexOf( item );
 			return index !== -1 ? this.removeAt( index ) : this;
 		},
 
-		removeItems: function( items ) {
+		removeItems: function(items) {
 			for (var i = 0; i < items.length; i++) {
 				this.removeItem( items[i] );
 			}
@@ -713,11 +722,11 @@
 		},
 
 		//fn is like function (index, item) { return item == 1; };
-		filter: function( fn ) {
+		filter: function(fn) {
 			return $( this.get() ).filter( fn ).get();
 		},
 
-		each: function( directAccess, fn ) {
+		each: function(directAccess, fn) {
 			if (!isBoolean( directAccess )) {
 				fn = directAccess;
 				directAccess = false;
@@ -755,24 +764,24 @@
 			return this;
 		},
 
-		map: function( fn ) {
+		map: function(fn) {
 			return $.map( this.get(), fn );
 		},
 
-		sort: function( by, asc ) {
+		sort: function(by, asc) {
 			return trigger( this.path, this.path, "afterUpdate", this.get().sortObject( by, asc ) );
 		},
 		//#endregion
 
 		//-------model link method -----------
-		reference: function( /*targetPath1, targetPath2, ..*/ ) {
+		reference: function(/*targetPath1, targetPath2, ..*/) {
 			for (var i = 0; i < arguments.length; i++) {
 				reference( this.path, arguments[i] );
 			}
 			return this;
 		},
 
-		dereference: function( /*targetPath1, targetPath2, ..*/ ) {
+		dereference: function(/*targetPath1, targetPath2, ..*/) {
 			for (var i = 0; i < arguments.length; i++) {
 				dereference( this.path, arguments[i] );
 			}
@@ -782,7 +791,7 @@
 		//endregion
 
 		//-------other methods---------
-		isEmpty: function( subPath ) {
+		isEmpty: function(subPath) {
 			var value = this.get( subPath );
 			return !value ? true :
 				!isArray( value ) ? false :
@@ -793,11 +802,11 @@
 			return this.path.startsWith( shadowNamespace );
 		},
 
-		toJSON: function( subPath ) {
+		toJSON: function(subPath) {
 			return JSON.stringify( this.get( subPath ) );
 		},
 
-		compare: function( expression ) {
+		compare: function(expression) {
 			if (expression) {
 				expression = toTypedValue( expression );
 				if (isString( expression )) {
@@ -818,33 +827,33 @@
 			}
 		},
 
-		saveLocal: function( subPath ) {
+		saveLocal: function(subPath) {
 			util.local( this.getPath( subPath ), this.get() );
 			return this;
 		},
 
-		getLocal: function( subPath ) {
+		getLocal: function(subPath) {
 			return util.local( this.getPath( subPath ) );
 		},
 
-		restoreLocal: function( subPath ) {
+		restoreLocal: function(subPath) {
 			rootNode.set( this.getPath( subPath ), this.getLocal( subPath ) );
 			return this;
 		},
 
-		clearLocal: function( subPath ) {
+		clearLocal: function(subPath) {
 			util.local( this.getPath( subPath ), undefined );
 			return this;
 		}
 
 	};
 
-	function expandToHashes ( $0 ) {
+	function expandToHashes ($0) {
 		return $0 === "." ? "#" : //if it is "." convert to "#"
-			Array( $0.length + 2 ).join( "#" ); ////if it is "#" convert to "##"
+			new Array( $0.length + 2 ).join( "#" ); ////if it is "#" convert to "##"
 	}
 
-	var onAddOrUpdateHandlers = [function /*inferNodeDependencies*/ ( context, index, value ) {
+	var onAddOrUpdateHandlers = [function /*inferNodeDependencies*/ (context, index, value) {
 
 		//only try to parse function body
 		//if it is a parameter-less function
@@ -862,13 +871,13 @@
 		}
 	}];
 
-	function processNewNode ( contextPath, indexPath, modelValue ) {
+	function processNewNode (contextPath, indexPath, modelValue) {
 		for (var i = 0; i < onAddOrUpdateHandlers.length; i++) {
 			onAddOrUpdateHandlers[i]( contextPath, indexPath, modelValue );
 		}
 	}
 
-	function getMainPath ( shadowPath ) {
+	function getMainPath (shadowPath) {
 		if (shadowPath === shadowNamespace) {
 			return "";
 		}
@@ -876,17 +885,17 @@
 		return match ? convertShadowKeyToMainPath( match[1] ) : shadowPath;
 	}
 
-	function convertShadowKeyToMainPath ( key ) {
+	function convertShadowKeyToMainPath (key) {
 		return key.replace( rHash, reduceToDot );
 	}
 
-	function reduceToDot ( hashes ) {
+	function reduceToDot (hashes) {
 		return hashes == "#" ? "." : // if is # return .
-			Array( hashes.length ).join( "#" ); // if it is ## return #
+			new Array( hashes.length ).join( "#" ); // if it is ## return #
 	}
 
 	/* processCurrent is used internally, don't use it */
-	function traverseModel ( modelPath, modelValue, processCurrent ) {
+	function traverseModel (modelPath, modelValue, processCurrent) {
 		var contextPath,
 			indexPath,
 			indexOfLastDot = modelPath.lastIndexOf( "." );
@@ -921,7 +930,7 @@
 		}
 	}
 
-	function reference ( referencingPath, referencedPath ) {
+	function reference (referencingPath, referencedPath) {
 		referencedPath = toPhysicalPath( referencedPath );
 		var referencingPaths = referenceTable[referencedPath];
 		if (!referencingPaths) {
@@ -930,7 +939,7 @@
 		referencingPaths.pushUnique( referencingPath );
 	}
 
-	function dereference ( referencingPath, referencedPath ) {
+	function dereference (referencingPath, referencedPath) {
 		referencedPath = toPhysicalPath( referencedPath );
 		var referencingPaths = referenceTable[referencedPath];
 		referencingPaths.remove( referencingPath );
@@ -939,7 +948,7 @@
 		}
 	}
 
-	function inferDependencies ( functionBody ) {
+	function inferDependencies (functionBody) {
 		var memberMatch,
 			rtn = [];
 
@@ -949,19 +958,19 @@
 		return rtn;
 	}
 
-	function contextOfPath ( path ) {
+	function contextOfPath (path) {
 		var match = rParentKey.exec( path );
 		return match && match[1] || "";
 	}
 
-	function indexOfPath ( path ) {
+	function indexOfPath (path) {
 		var match = rIndex.exec( path );
 		return match[1] || match[0];
 	}
 
 	var dummy = {};
 
-	var Class = function _ ( seed ) {
+	var Class = function _ (seed) {
 		var temp;
 
 		if (!(this instanceof _)) {
@@ -980,13 +989,13 @@
 	var superPrototype;
 	extend( Class.prototype, {
 
-		callProto: function( methodName ) {
+		callProto: function(methodName) {
 			var method = this.constructor.prototype[methodName];
 			return method.apply( this, slice.call( arguments, 1 ) );
 		},
 
 		//instance.callBase("method1", p1, p2,...);
-		callBase: function( methodName ) {
+		callBase: function(methodName) {
 			//superPrototype is global object, we use this
 			// because assume js in browser is a single threaded
 
@@ -1014,7 +1023,7 @@
 		 },
 		 */
 		//the default initialize is to extend the instance with seed data
-		initialize: function( seed ) {
+		initialize: function(seed) {
 			extend( this, seed );
 		},
 
@@ -1038,7 +1047,7 @@
 		//if You have a subType called Person
 		//you can Person.list([ seed1, seed2 ]);
 		//to create an array of typed items
-		list: function( seeds ) {
+		list: function(seeds) {
 
 			var i,
 				seed,
@@ -1071,7 +1080,7 @@
 
 		//to create a new Type call
 
-		extend: function( instanceProperties, staticProperties ) {
+		extend: function(instanceProperties, staticProperties) {
 			var Child,
 				Parent = this;
 
@@ -1139,7 +1148,7 @@
 			// the the physical path is pointing to a shadow
 			// and the main model has been created
 			// and the shadow's parent is an object
-			toPhysicalPath: toPhysicalPath = function( logicalPath, createShadowIfNecessary /* internal use*/ ) {
+			toPhysicalPath: toPhysicalPath = function(logicalPath, createShadowIfNecessary /* internal use*/) {
 
 				var match, rtn = "", leftContext = "", mainValue, shadowKey, mainPath;
 
@@ -1208,7 +1217,7 @@
 					rtn ? rtn + "." + logicalPath :
 						logicalPath;
 			},
-			toLogicalPath: toLogicalPath = function( physicalPath ) {
+			toLogicalPath: toLogicalPath = function(physicalPath) {
 
 				var index, logicalPath, mainPath, match;
 
@@ -1237,8 +1246,8 @@
 			 * and  context is "a", it will be merged to "a.b" . If explicitly specify
 			 * convertSubPathToRelativePath to false, they will not be merged, so the "b" will be
 			 * returned as merge path*/
-			mergePath: mergePath = function( contextPath, subPath, convertSubPathToRelativePath
-			                                 /*used internally*/ ) {
+			mergePath: mergePath = function(contextPath, subPath, convertSubPathToRelativePath
+			                                /*used internally*/) {
 
 				if (subPath == "_" || contextPath == "_") {
 					return "_";
@@ -1296,22 +1305,22 @@
 				return contextPath + subPath;
 			},
 
-			isUndefined: isUndefined = function( obj ) {
+			isUndefined: isUndefined = function(obj) {
 				return (obj === undefined);
 			},
-			isPrimitive: isPrimitive = function( obj ) {
+			isPrimitive: isPrimitive = function(obj) {
 				return (obj === null ) || (typeof(obj) in primitiveTypes);
 			},
-			isString: isString = function( val ) {
+			isString: isString = function(val) {
 				return typeof val === "string";
 			},
-			isObject: isObject = function( val ) {
+			isObject: isObject = function(val) {
 				return $.type( val ) === "object";
 			},
-			isBoolean: isBoolean = function( object ) {
+			isBoolean: isBoolean = function(object) {
 				return typeof object === "boolean";
 			},
-			toTypedValue: toTypedValue = function( stringValue ) {
+			toTypedValue: toTypedValue = function(stringValue) {
 				if (isString( stringValue )) {
 					stringValue = $.trim( stringValue );
 					try {
@@ -1327,10 +1336,10 @@
 				}
 				return stringValue;
 			},
-			isPromise: isPromise = function( object ) {
+			isPromise: isPromise = function(object) {
 				return !!(object && object.promise && object.done && object.fail);
 			},
-			clearObj: clearObj = function( obj ) {
+			clearObj: clearObj = function(obj) {
 				if (isPrimitive( obj )) {
 					return null;
 				}
@@ -1341,14 +1350,14 @@
 				}
 				return obj;
 			},
-			clone: clone = function( original, deepClone ) {
+			clone: clone = function(original, deepClone) {
 				return isPrimitive( original ) ? original :
 					isArray( original ) ? original.slice( 0 ) :
 						isFunction( original ) ? original :
 							extend( !!deepClone, {}, original );
 			},
 
-			local: function( key, value ) {
+			local: function(key, value) {
 				if (arguments.length == 1) {
 					return JSON.parse( localStorage.getItem( key ) );
 				} else {
@@ -1360,11 +1369,11 @@
 				}
 			},
 
-			toString: function( value ) {
+			toString: function(value) {
 				return (value === null || value === undefined) ? "" : "" + value;
 			},
 
-			encodeHtml: function( str ) {
+			encodeHtml: function(str) {
 				var div = document.createElement( 'div' );
 				div.appendChild( document.createTextNode( str ) );
 				return div.innerHTML;
@@ -1375,7 +1384,7 @@
 		},
 
 		//this is used to process the new node added to repository
-		onAddOrUpdateNode: function( fn ) {
+		onAddOrUpdateNode: function(fn) {
 			if (fn) {
 				onAddOrUpdateHandlers.push( fn );
 				return this;
@@ -1384,7 +1393,7 @@
 			}
 		},
 
-		onDeleteNode: function( fn ) {
+		onDeleteNode: function(fn) {
 			if (fn) {
 				onDeleteHandlers.push( fn );
 				return this;
@@ -1398,7 +1407,7 @@
 	} );
 
 	var onDeleteHandlers = [
-		function /*removeModelLinksAndShadows*/ ( physicalPath, removedValue ) {
+		function /*removeModelLinksAndShadows*/ (physicalPath, removedValue) {
 
 			var watchedPath,
 				mainPath,
@@ -1434,7 +1443,7 @@
 		}
 	];
 
-	$( "get,set,del,extend".split( "," ) ).each( function( index, value ) {
+	$( "get,set,del,extend".split( "," ) ).each( function(index, value) {
 		hm[value] = function() {
 			return rootNode[value].apply( rootNode, slice.call( arguments ) );
 		};
@@ -1442,7 +1451,7 @@
 
 	rootNode = hm();
 
-	$fn.hmData = function( name, value ) {
+	$fn.hmData = function(name, value) {
 
 		var data = this.data( "hmData" );
 
@@ -3786,7 +3795,9 @@
 //
 
 
-	if (typeof Handlebars != "undefined") {
+	var Handlebars = window.Handlebars;
+
+	if (isUndefined( Handlebars )) {
 
 		hm.template.engineAdapter( "handlebars", {
 
@@ -3817,13 +3828,12 @@
 			return "ns:/" + options.data.renderContext.modelPath + "." + options.data.index + ";";
 		} );
 
-
 		//{{keyToNs}}
 		Handlebars.registerHelper( "keyToNs", function( options ) {
 			var renderContext = options.data.renderContext;
 
-			var rtn =  "ns:/" + renderContext.modelPath + ".table." +
-			       renderContext.e.publisher.itemKey( this );
+			var rtn = "ns:/" + renderContext.modelPath + ".table." +
+			          renderContext.e.publisher.itemKey( this );
 			return rtn;
 		} );
 
@@ -4642,6 +4652,2635 @@
 	} );
 
 
+
+//
+/*
+ <@depends>
+ subscription.js,
+ repository.js
+ </@depends>
+ */
+
+
+	var methodMap = {
+		"create": "POST",
+		"update": "PUT",
+		"destroy": "DELETE",
+		"fetch": "GET"
+	};
+
+	var entityState = {
+		detached: 0,
+		unchanged: 1,
+		added: 3,
+		deleted: 4,
+		modified: 5
+	};
+
+	function markModified ( e ) {
+
+		var basePath = this.path; //items
+		var originalPath = e.originalPublisher.path; //items.1.firstName
+		var diffPath = originalPath.substr( basePath.length + 1 ); //1.firstName
+		var dotIndex = diffPath.indexOf( "." );
+		var entityPath = basePath + "." + diffPath.substr( 0, dotIndex ); //items.1
+		var statePath = entityPath + ".__state"; //items.1.__state
+
+		if (originalPath !== statePath &&
+		    hm.get( statePath ) == entityState.unchanged) {
+			//use set method is deliberate, because we want
+			//to raise event
+			hm.set( statePath, entityState.modified );
+		}
+	}
+
+	hm.onAddOrUpdateNode( function( context, index, value ) {
+		if (value instanceof hm.Entity) {
+
+			if (value.__state === entityState.detached) {
+				value.__state = entityState.added;
+			}
+
+			if (isUndefined( hm( context ).get( "__entityContainer" ) )) {
+				hm.sub( context, context, "afterUpdate.*", markModified );
+				hm( context ).set( "__entityContainer", true );
+			}
+		}
+	} );
+
+	function callStaticAjaxMethod ( node, methodName ) {
+		var entity = node.get();
+
+		return entity.constructor[methodName]( entity ).done( function( data ) {
+
+			node.set(
+
+				"__state",
+
+				methodName == "destroy" ?
+					entityState.detached :
+					entityState.unchanged
+			);
+
+			node.trigger( "afterSync." + methodName );
+		} );
+	}
+
+	//the reason that we don't implement ajax in the instance method is that, we want to
+	//support the call from repository node, such node.set("create"), node.set("update")..
+	//we want to delegate this call the static method
+	hm.Entity = hm.Class.extend(
+		//instance method, which is invoked by node.get method
+		//or it can be invoked the object directly
+		{
+			//this state is meaningful only when it entity is inside of repository
+			__state: entityState.detached,
+
+			create: function __ () {
+				if (this instanceof hm) {
+					if (this.get( "__state" ) == entityState.added) {
+						return callStaticAjaxMethod( this, "create" );
+					}
+					throw "entity is not a new item";
+
+				} else {
+					// don't use Entity.create(this), because
+					// this.constructor is not necessary Entity
+					return this.constructor.create( this );
+
+				}
+			},
+
+			fetch: function __ () {
+				return this instanceof hm ? callStaticAjaxMethod( this, "fetch" ) :
+					this.constructor.fetch( this );
+			},
+
+			update: function __ () {
+
+				if (this instanceof hm) {
+					if (this.get( "__state" ) == entityState.modified) {
+						return callStaticAjaxMethod( this, "update" );
+					}
+				} else {
+					return this.constructor.update( this );
+				}
+			},
+
+			destroy: function __ () {
+				if (this instanceof hm) {
+					var node = this;
+					return callStaticAjaxMethod( this, "destroy" ).done( function() {
+						node.del();
+					} );
+				} else {
+					return this.constructor.destroy( this );
+				}
+			},
+
+			save: function __ () {
+				if (this instanceof hm) {
+
+					var state = this.get( "__state" );
+					if (state == entityState.added) {
+
+						return this.get( "create" );
+
+					} else if (state == entityState.modified) {
+
+						return this.get( "update" );
+					}
+
+				} else {
+
+					throw "not supported";
+				}
+
+			}
+
+		},
+
+		//static method, which knows nothing about repository
+		{
+			state: entityState,
+
+			create: function( instance ) {
+				return this.ajax( "create", instance );
+			},
+
+			update: function( instance ) {
+				return this.ajax( "update", instance );
+			},
+			destroy: function( instance ) {
+				return this.ajax( "destroy", instance );
+			},
+
+			fetch: function( instance ) {
+				if (instance) {
+					return this.ajax( "fetch", instance );
+				} else {
+					var Constructor = this;
+					//the pipe method is used to convert an array of
+					// generic object into an array of object of the same "Class"
+					return this.ajax( "fetch" ).pipe( function( data ) {
+						return $( Constructor.list( data ) ).each(function() {
+							this.__state = entityState.unchanged;
+						} ).get();
+					} );
+
+				}
+			},
+
+			getUrl: function( methodName, instance ) {
+				var baseUrl = this.url || instance.url,
+					id = instance && instance.id;
+
+				return id ? baseUrl + (baseUrl.charAt( baseUrl.length - 1 ) === '/' ? '' : '/') + encodeURIComponent( id ) :
+					baseUrl;
+			},
+
+			ajax: function( methodName, instance ) {
+				var method = methodMap[methodName];
+
+				var ajaxOptions = {
+					type: method,
+					dataType: 'json',
+					url: this.getUrl( methodName, instance ),
+					contentType: method == "GET" ? null : "application/json",
+					processData: false,
+					data: method == "GET" ? null : JSON.stringify( instance )
+				};
+
+				return $.ajax( ajaxOptions ).done( function( response ) {
+					instance && extend( instance, response );
+				} );
+			}
+		} );
+
+	extend( hmFn, {
+
+		//node function which bridget the hm method to the static method of model
+		//subPath is optional
+		//method is required create/read/update/del
+		//e.g node.sync("create");
+		save: function() {
+			return this.get( "save" );
+		},
+
+		destroy: function() {
+			return this.get( "destroy" );
+		},
+
+		fetch: function() {
+			return this.get( "fetch" );
+		}
+	} );
+
+//
+//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+
+
+	defaultOptions.errors = {
+		defaultError: "Please enter a valid value"
+	};
+
+	var afterUpdateAndCheckValidity = "afterUpdate* checkValidity",
+		invalidPaths = shadowRoot.invalidPaths = [],
+		invalidPathsModel = hm( "*invalidPaths" ),
+		rEmpty = /^\s*$/,
+		rEmail = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i,
+		rUrl = /^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i,
+		rDateISO = /^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/,
+		rNumber = /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/,
+		rDigit = /^\d+$/,
+		rInvalidDate = /Invalid|NaN/,
+		rRegEx = /^(\/(\\[^\x00-\x1f]|\[(\\[^\x00-\x1f]|[^\x00-\x1f\\\/])*\]|[^\x00-\x1f\\\/\[])+\/[gim]*)(,(.*))*$/,
+		rFirstToken = /([^,]+)(,(.*))?/,
+		rFirstTwoToken = /(\w+),(\w+)(,(.*))?/;
+
+	/*	this method is to create a subscription group and
+	 workflow type using the name of validator
+	 and also add a class rule using the name of validator
+	 so make sure the name of validator do not collide with other validator
+
+	 a validator is object like
+	 {
+	 name: "validatorName",
+	 error: "error message"
+	 isValid: function( value, options ); // options let user to help the isValid to work better
+	 initialize: function(options); //allow user convert string value of modelEvent.options to the options passed in isValid function
+	 buildError: function(defaultMessage, options )
+	 }
+	 */
+	hm.validator = function( validator ) {
+
+		if (isArray( validator )) {
+			for (var i = 0; i < validator.length; i++) {
+				hm.validator( validator[i] );
+			}
+			return this;
+		}
+
+		var validatorName = validator.name;
+
+		if (hm.workflowType( validatorName )) {
+			throw "validator name '" + validatorName + "' collide with name in hm.workflowTypes";
+		}
+
+		//add default error if applicable
+		//user can localize errors message
+		if (validator.error) {
+			defaultOptions.errors[validatorName] = validator.error;
+		}
+
+		var workflowTypeName = "v_" + validatorName;
+		hm.workflowType( workflowTypeName, buildValidationWorkflowType( validator ) );
+
+		//data-sub="required:path" or data-sub="required:path|options"
+		hm.groups[validatorName] = "!afterUpdate checkValidity:.|*" + workflowTypeName;
+
+	};
+
+	hm.workflowType( {
+		checkValidity: function( e ) {
+			if (!hm.checkValidity( this.path )) {
+				//because it is the first handler, e.stopImmediatePropagation will
+				//stop process all other handler
+				e.stopImmediatePropagation();
+			}
+		},
+
+		// use by group
+		// warn: "!after*:*errors|*warn",
+		warn: function( e ) {
+			//e.publisher points to "model*errors"
+			if (e.publisher.isEmpty()) {
+
+				this
+					.removeClass( "error" )
+					.next( "span.error" )
+					.remove();
+
+			} else {
+
+				this
+					.addClass( "error" )
+					.next( "span.error" )
+					.remove()
+					.end()
+					.after( "<span class='error'>" + e.publisher.get() + "</span>" );
+			}
+		},
+
+		renderErrorSummary: hm.template.newTemplateWorkflow(
+			function( e ) {
+				return [e.publisher.getErrors()];
+			}
+		)
+	} );
+
+	extend( hm.groups, {
+
+		validator: function( elem, path, group, options ) {
+			if (!options) {
+				throw "missing validator path";
+			}
+			if (!options.startsWith( "#" )) {
+				options = "#" + options;
+			}
+			hm( path ).validator( options );
+		},
+
+		//add a click handler to element to checkValidity
+		checkValidity: function( elem, path, subscriptions, options ) {
+			//prepend to to subscriptions array
+			//so that it is the first subscriptions, and it will be evaluated first
+			subscriptions.prependSub( path, elem, "click", "*checkValidity" );
+		},
+
+		resetFormValidity: function( elem, path, subscriptions, options ) {
+			subscriptions.appendSub( path, elem, "reset", "*skipGet resetValidity" );
+		},
+
+		//$click:.|*skipGet resetValidity
+		resetForm: "resetFormValidity:.;resetFormValues:.",
+
+		resetValidity: "$click:.|*skipGet resetValidity",
+
+		warn: "!after*:*errors|*warn",
+
+		warnSummary: "!afterUpdate* validityChecked:.|*renderErrorSummary;!validityReset:.|empty"
+
+	} );
+
+	function isPathValid ( path ) {
+
+		if (path === "") {
+			return !invalidPaths.length;
+		}
+
+		var prefix = path + ".";
+
+		for (var i = 0, invalidPath, length = invalidPaths.length; i < length; i++) {
+			invalidPath = invalidPaths[i];
+			if (invalidPath == path || invalidPath.startsWith( prefix )) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	//$("x").subscribe("person", "checkValidityd", function (e) {
+	// alert(e.proposed);
+	//}
+	hm.subscription.special.validityChanged = {
+		setup: function( subscriber, publisher ) {
+			var isValidPath = publisher + "*isValid";
+
+			if (isUndefined( hm.get( isValidPath ) )) {
+				hm.sub( publisher, "*invalidPaths", "!after*. after*.1", function() {
+					var isValid = isPathValid( publisher );
+					if (hm.get( isValidPath ) !== isValid) {
+						hm.trigger( publisher, publisher, "validityChanged", isValid, !isValid );
+						hm.set( isValidPath, isValid );
+					}
+				} );
+			}
+		}
+	};
+
+	extend( hmFn, {
+
+		/*
+		 * 1. the objects in path "*invalidPaths", it holds all the path of model which is in error
+		 * 2. the object in path "model*errors", it holds all error message that is
+		 * */
+		checkValidity: function( subPath ) {
+
+			var fullPath = this.getPath( subPath ); // this.cd( subPath ).path;
+
+			traverseModelNeedValidation( fullPath, function( path ) {
+				trigger( path, path, "checkValidity", rootNode.get( path ) );
+			} );
+
+			//after checkValidity fired, we can check the invalid paths count for the model,
+			var isValid = isPathValid( fullPath );
+			//
+			hm.trigger( fullPath, fullPath, "validityChecked", isValid );
+
+			return isValid;
+		},
+
+		//hm("x").check(validatorName, error)
+		//example
+		//hm("x").check("number", "my error message")
+		//
+		//hm("x").check(fnIsValid, error)
+		//example
+		//hm("x").check(function( value ) { return false; }, "my error message");
+		validator: function( validator, options ) {
+			var subPath,
+				i,
+				currentValidator;
+
+			if (isObject( validator )) {
+
+				for (subPath in validator) {
+
+					this.cd( subPath ).validator( validator[subPath] );
+
+				}
+			} else {
+
+				if (isFunction( validator ) || (isString( validator ) && validator.startsWith( "#" ))) {
+
+					if (isString( validator )) {
+						validator = this.raw( validator.substr( 1 ) );
+					}
+
+					hm.handle( this.path, afterUpdateAndCheckValidity, function( e ) {
+						var publisher = e.publisher,
+							previousError = validator.previousError;
+
+						//don't check when it is empty
+						if (!isEmptyString( e.proposed )) {
+
+							var errorMessage = validator( publisher.get() );
+
+							if (errorMessage === false) {
+								errorMessage = defaultOptions.errors.defaultError;
+							}
+
+							if (isString( errorMessage )) {
+								// the "!=" is deliberate, don't change to "!=="
+								if (errorMessage != previousError) {
+
+									publisher.addError( errorMessage );
+
+									if (!previousError) {
+										publisher.removeError( previousError );
+									}
+
+									validator.previousError = errorMessage;
+								}
+
+							} else {
+								if (previousError) {
+									publisher.removeError( previousError );
+									validator.previousError = "";
+								}
+							}
+						} else {
+							if (previousError) {
+								publisher.removeError( previousError );
+								validator.previousError = "";
+							}
+						}
+
+					} );
+
+				} else if (isString( validator )) {
+
+					hm.handle( this.path, afterUpdateAndCheckValidity, "*v_" + validator, options );
+
+				} else if (isArray( validator )) {
+
+					for (i = 0; i < validator.length; i++) {
+
+						currentValidator = validator[i];
+
+						if (isArray( currentValidator )) {
+							this.validator( currentValidator[0], currentValidator[1] );
+
+						} else {
+							this.validator( currentValidator );
+						}
+					}
+				}
+
+			}
+			return this;
+		},
+
+		resetValidity: function() {
+			resetValidity( this.path );
+
+			if (!isPrimitive( this.get() )) {
+				traverseModelNeedValidation( this.path, resetValidity );
+			}
+			hm.trigger( this.path, this.path, "validityReset" );
+		},
+
+		addError: function( error ) {
+			this.createIfUndefined( "*errors", [] )
+				.cd( "*errors" )
+				.pushUnique( error );
+
+			invalidPathsModel.pushUnique( this.path );
+			return this;
+
+		},
+
+		removeError: function( error ) {
+
+			var errors = this.createIfUndefined( "*errors", [] ).cd( "*errors" );
+			errors.removeItem( error );
+			if (errors.isEmpty()) {
+				invalidPathsModel.removeItem( this.path );
+			}
+			return this;
+		},
+
+		getErrors: function() {
+
+			var i,
+				path = this.path,
+				invalidPath,
+				rtn = [];
+
+			for (i = 0; i < invalidPaths.length; i++) {
+				invalidPath = invalidPaths[i];
+				if (invalidPath == path || invalidPath.startsWith( path )) {
+					rtn = rtn.concat( hm.get( invalidPath + "*errors" ) );
+				}
+			}
+			return rtn;
+		}
+
+	} );
+
+	hm.checkValidity = function( path ) {
+		return rootNode.checkValidity( path );
+	};
+
+	//when path is deleted, remove it from invalidPathsModel
+	hm.onDeleteNode( function( path ) {
+		invalidPathsModel.removeItem( path );
+	} );
+
+	function buildRegexFn ( ex, reverse ) {
+		return reverse ? function( value ) {
+			return !ex.test( value );
+		} : function( value ) {
+			return ex.test( value );
+		};
+	}
+
+	function defaultErrorBuilder ( format, options ) {
+		return options.error || format.supplant( options );
+	}
+
+	hm.validator.defaultErrorBuilder = defaultErrorBuilder;
+	hm.validator.buildRegexFn = buildRegexFn;
+
+	hm.validator( [
+		{
+			name: "required",
+			error: "This field is required.",
+			//when it is checked it is always true
+			isValid: returnTrue
+		},
+		{
+			name: "email",
+			error: "Please enter a valid email address.",
+			isValid: buildRegexFn( rEmail )
+		},
+		{
+			name: "url",
+			error: "Please enter a valid URL.",
+			isValid: buildRegexFn( rUrl )
+		},
+		{
+			name: "date",
+			error: "Please enter a valid date.",
+			isValid: function( value ) {
+				return !rInvalidDate.test( new Date( value ).toString() );
+			}
+		},
+		{
+			name: "dateISO",
+			error: "Please enter a valid date (ISO).",
+			isValid: buildRegexFn( rDateISO )
+		},
+		{
+			name: "number",
+			error: "Please enter a valid number.",
+			isValid: buildRegexFn( rNumber )
+		},
+		{
+			name: "digits",
+			error: "Please enter only digits.",
+			isValid: buildRegexFn( rDigit )
+
+		},
+		{
+			name: "creditcard",
+			error: "Please enter a valid credit card number.",
+			isValid: function( value ) {
+				if (/[^0-9\-]+/.test( value )) {
+					return false;
+				}
+
+				var nCheck = 0,
+					nDigit = 0,
+					bEven = false,
+					cDigit;
+
+				value = value.replace( /\D/g, "" );
+
+				for (var n = value.length - 1; n >= 0; n--) {
+					cDigit = value.charAt( n );
+					nDigit = parseInt( cDigit, 10 );
+					if (bEven) {
+						if ((nDigit *= 2) > 9) {
+							nDigit -= 9;
+						}
+					}
+					nCheck += nDigit;
+					bEven = !bEven;
+				}
+
+				return (nCheck % 10) === 0;
+			}
+
+		},
+		{
+			name: "minlength",
+			error: "Please enter at least {minlength} characters.",
+			isValid: function( value, options ) {
+
+				return value.length >= options.minlength;
+
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (options && (match = rFirstToken.exec( options ))) {
+
+					handler.options = {
+						minlength: +match[1],
+						error: match[3]
+					};
+				} else {
+					throw "invalid options for minlength validator";
+				}
+			},
+
+			buildError: defaultErrorBuilder
+		},
+		{
+			name: "maxlength",
+			error: "Please enter no more than {maxlength} characters.",
+			isValid: function( value, options ) {
+
+				return value.length <= options.maxlength;
+
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (options && (match = rFirstToken.exec( options ))) {
+					handler.options = {
+						maxlength: +match[1],
+						error: match[3]
+					};
+				} else {
+					throw "invalid options for maxlength validator";
+				}
+			},
+			buildError: defaultErrorBuilder
+		},
+		{
+			name: "rangelength",
+			error: "Please enter a value between {minlength} and {maxlength} characters long.",
+			isValid: function( value, options ) {
+
+				return value.length >= options.minlength &&
+				       value.length <= options.maxlength;
+
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (options && (match = rFirstTwoToken.exec( options ))) {
+					handler.options = {
+						minlength: +match[1],
+						maxlength: +match[2],
+						error: match[4]
+					};
+				} else {
+					throw "invalid options for rangelength validator";
+				}
+			},
+			buildError: defaultErrorBuilder
+
+		},
+		{
+			name: "min",
+			error: "Please enter a value greater than or equal to {min}.",
+			isValid: function( value, options ) {
+
+				return value >= options.min;
+
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (options && (match = rFirstToken.exec( options ))) {
+					handler.options = {
+						min: +match[1],
+						error: match[3]
+					};
+				} else {
+					throw "invalid options for min validator";
+				}
+
+			},
+			buildError: defaultErrorBuilder
+		},
+		{
+			name: "max",
+			error: "Please enter a value less than or equal to {max}.",
+			isValid: function( value, options ) {
+
+				return value <= options.max;
+
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (options && (match = rFirstToken.exec( options ))) {
+					handler.options = {
+						max: +match[1],
+						error: match[3]
+					};
+				} else {
+					throw "invalid options for max validator";
+				}
+			},
+			buildError: defaultErrorBuilder
+		},
+		{
+			name: "range",
+			error: "Please enter a value between {min} and {max}.",
+			isValid: function( value, options ) {
+
+				return value >= options.min && value <= options.max;
+
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (options && (match = rFirstTwoToken.exec( options ))) {
+					handler.options = {
+						min: +match[1],
+						max: +match[2],
+						error: match[4]
+					};
+				} else {
+					throw "invalid options for range validator";
+				}
+			},
+			buildError: defaultErrorBuilder
+		},
+		{
+			name: "equal",
+			error: "Please enter the same value again.",
+			isValid: function( value, options ) {
+				return rootNode.get( options.comparePath ) === value;
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (options && (match = rFirstToken.exec( options ))) {
+
+					var comparePath = publisher.cd( match[1] ).path;
+					handler.options = {
+						comparePath: comparePath,
+						error: match[3]
+					};
+
+					publisher.sub( comparePath, "afterUpdate", function( e ) {
+						if (!this.isEmpty()) {
+							trigger(
+								this.path,
+								this.path,
+								"checkValidity",
+								this.get() //proposed value
+							);
+						}
+					} );
+
+				} else {
+					throw "invalid options for equal validator";
+				}
+			}
+		},
+		{
+			name: "regex",
+			error: "Please enter a value match with required pattern.",
+			isValid: function( value, options ) {
+				return options.regex.test( value );
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+
+				if (options && (match = rRegEx.exec( options ))) {
+					handler.options = {
+						regex: eval( match[1] ),
+						error: match[5]
+					};
+				} else {
+					throw "invalid options for regex validator";
+				}
+			}
+		},
+		{
+			name: "fixedValue",
+			error: 'Please enter value "{fixedValue}"',
+			isValid: function( value, options ) {
+				return value == options.fixedValue;
+			},
+			initialize: function( publisher, subscriber, handler, options ) {
+				var match;
+				if (isString( options )) {
+					match = /^(\w+)(,(.*))*$/.exec( options );
+					if (match) {
+						handler.options = {
+							fixedValue: toTypedValue( match[1] ),
+							error: match[3]
+						};
+					}
+				} else if (isObject( options )) {
+
+					handler.options = options;
+
+				} else if (!isUndefined( options )) {
+
+					handler.options = {
+						fixedValue: options
+					};
+
+				} else {
+					throw "missing options in fixedValue validator";
+				}
+			},
+			buildError: defaultErrorBuilder
+		}
+	] );
+
+	function resetValidity ( path ) {
+		var errorsModel = hm( path + "*errors" );
+		if (!errorsModel.isEmpty()) {
+			errorsModel.clear();
+			invalidPathsModel.removeItem( path );
+		}
+	}
+
+	var isRequired = hm.workflowType( "v_required" ).get;
+
+	function isModelRequired ( path ) {
+		var subscriptionByModel = hm( path ).subsToMe();// subscriptions.getByPublisher( path );
+		for (var i = 0; i < subscriptionByModel.length; i++) {
+			var subscription = subscriptionByModel[i];
+			if (subscription.workflow.get === isRequired) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function buildErrorMessage ( validator, options ) {
+
+		//named validator normally has a defaultError
+		var defaultError = validator.name && defaultOptions.errors[validator.name];
+
+		//if validator has buildError function, this take the highest priority
+		if (validator.buildError) {
+
+			//return userError || format.apply( null, [defaultError].concat( options.minlength ) );
+			return validator.buildError( defaultError, options );
+
+			//if defaultError is format string,
+		} else {
+
+			//userError is normally passed in options of each instance
+			var userError = isObject( options ) ? options.error : options;
+
+			if (defaultError && defaultError.contains( "{0}" )) {
+
+				return defaultError.format.apply( defaultError, userError.split( "," ) );
+
+			} else {
+
+				return userError || defaultError || validator.error;
+			}
+		}
+	}
+
+	function buildValidationWorkflowType ( validator ) {
+
+		return {
+
+			initialize: validator.initialize,
+
+			get: function( e ) {
+
+				//if it violate required rule, don't do further validation,
+				//as we expect the required rule will capture it first.
+				var isValid,
+					violateRequiredRule,
+					publisher = e.publisher,
+					options = e.workflow.options,
+					proposed = e.proposed,
+					errorMessage = buildErrorMessage( validator, options );
+
+				//if model is empty, only check the "require" validator
+				//If it is required, then it is invalid, no further validation is checked
+				//if it is not required, it is valid, no further validation is checked
+				if (isEmptyString( proposed )) {
+
+					if (isModelRequired( publisher.path )) {
+						isValid = false;
+						violateRequiredRule = true;
+					} else {
+						isValid = true;
+					}
+
+				} else {
+
+					isValid = validator.isValid( proposed, options );
+				}
+
+				if (!isValid) {
+
+					//add error when the current rule is the "required rule"
+					//or when "required" rule is not violated
+					if (!violateRequiredRule || validator.name === "required") {
+						publisher.addError( errorMessage );
+					} else {
+						publisher.removeError( errorMessage );
+					}
+				} else {
+					publisher.removeError( errorMessage );
+				}
+			}
+		};
+	}
+
+	function traverseModelNeedValidation ( path, callback ) {
+
+		//the following code try to trigger the "checkValidity" event, so that the validator will
+		// be called to check current value of the model
+		//you can not call afterUpdate, because there might trigger other non-validator handler
+		//that are attached to afterUpdate
+		var allSubscriptions = hm.subscription.getAll();
+		var checkValiditydPaths = {};
+
+		for (var i = allSubscriptions.length - 1, subscription, publisherPath; i >= 0; i--) {
+
+			subscription = allSubscriptions[i];
+			publisherPath = subscription.publisher;
+
+			var isValidationRequired =
+				isString( publisherPath ) && !checkValiditydPaths[publisherPath] &&
+				publisherPath.startsWith( path ) &&
+				subscription.eventTypes.contains( "checkValidity" );
+
+			if (isValidationRequired) {
+
+				checkValiditydPaths[publisherPath] = true;
+				callback( publisherPath );
+
+			}
+		}
+	}
+
+	function isEmptyString ( value ) {
+		return value === null || value === undefined || rEmpty.test( value );
+	}
+
+//
+//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//
+
+
+
+	if (isUndefined( matrix )) {
+
+		template.load = function(templateId) {
+			return matrix( templateId + ".template" );
+		};
+
+		matrix.loader.set( "template", {
+
+			load: {
+				compile: function(moduleId, sourceCode) {
+
+					$( sourceCode ).filter( "script[id]" ).each( function() {
+
+						var $sourceCodeContainer = $( this );
+
+						template.compile(
+							this.id,
+							$sourceCodeContainer.html(),
+							$sourceCodeContainer.attr( "type" ) || template.defaultEngine );
+					} );
+				},
+				buildDependencies: "parseDependsTag"
+			},
+
+			url: function(templateId) {
+				//first truncate the ".template" in the templateId, and get the real templateId
+				return template.templateIdToUrl( matrix.fileName( templateId ) );
+			}
+		} );
+
+		//~ is the base url of matrix resource
+		//a -->     ~template/a/main.html
+		//a.b -->   ~template/a/b.html
+		//a.b.c --> ~template/a/b.html
+		//
+		//if id starts with "*", it is called share template
+		//shared template id is like fileName.remainingPart
+		//
+		//*a --> ~template/_/a.html
+		//*a.b --> ~template/_/a.html
+		//*a.b.c --> ~template/_/a.html
+		template.templateIdToUrl = function(templateId) {
+
+			var idSegments, folderName, fileName;
+
+			if (templateId.startsWith( "*" )) {
+				templateId = templateId.substr( 1 );
+				//
+				idSegments = templateId.split( "." );
+				folderName = "_";
+				fileName = idSegments[0];
+
+			} else {
+
+				idSegments = templateId.split( "." );
+				folderName = idSegments[0];
+				fileName = idSegments[1] || "main";
+
+			}
+
+			return "template/" + folderName + "/" + fileName + ".html";
+		};
+
+	}
+
+//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+
+
+	//the convention here is that ,
+	// use rowView for the row in view
+	//use item for the item in model array
+
+	hm.workflowType( {
+
+		//----------workflow type which modify row in list view-----------
+
+		//!afterCreate.1:array|*addRowView;
+		addRowView: newTemplateWorkflow(
+
+			//the reason to use getOriginal is that
+			//the subscription is the items array
+			//but here we want to the elem
+			"*getOriginal",
+
+			function( rowView, e ) {
+
+				var rowContainer = this,
+					rows = rowContainer.children();
+
+				if (rows.length === 0) {
+
+					rowContainer.append( rowView );
+
+				} else {
+
+					//the insert may not happen at the end of the array
+					//at can be insert in the middle, so
+					//we can not simply do subscriber.append()
+					//we need to append the row view at the index
+					var index = +e.originalPublisher.pathIndex();
+
+					//row zero is special, need to use before method
+					if (index === 0) {
+
+						rows.eq( 0 ).before( rowView );
+					} else {
+						rows.eq( index - 1 ).after( rowView );
+					}
+				}
+			}
+		),
+
+		//!afterUpdate.1:array|*updateRowView
+		updateRowView: newTemplateWorkflow(
+
+			"*getOriginal",
+
+			function( value, e ) {
+				this.children().eq( +e.originalPublisher.pathIndex() ).replaceWith( value );
+			} ),
+
+		//!afterDel.1:array|*removeRowView;
+		removeRowView: function( e ) {
+			this.children().eq( +e.originalPublisher.pathIndex() ).remove();
+		}
+
+
+	} );
+
+	//autoQuery means user don't need to trigger search button
+	//query result will automatically updated when
+	//query change, by default it is false
+	//which means user has refreshQuery manually
+	hmFn.initQueryable = function( autoQuery ) {
+
+		if (this.get( "*query" )) {
+			return this;
+		}
+
+		var queryable,
+			query,
+			sort,
+			pager,
+			filterFn,
+			filter,
+			items = this.get(),
+			queryNode = this.cd( "*query" ),
+			queryResultNode = this.cd( "*queryResult" ),
+			hasQueryResultNode = this.cd( "*hasQueryResult" ),
+			pagerNode = queryNode.cd( "pager" ),
+			filterNode = queryNode.cd( "filter" ),
+			filterEnabledNode = filterNode.cd( "enabled" ),
+			sortNode = queryNode.cd( "sort" );
+
+		autoQuery = !!autoQuery;
+
+		if (autoQuery) {
+			//items*queryResult ---referencing--> items*query
+			queryResultNode.reference( queryNode.path );
+		}
+
+		//items*queryResult --> items
+		queryResultNode.reference( this.path );
+
+		this.extend(
+			"*",
+			queryable = {
+
+				//if it is true, refreshQuery is bypassed
+				autoQuery: autoQuery,
+
+				hasQueryResult: false,
+
+				//the object holding the data about paging, sorting, and filtering
+				query: query = {
+					pager: pager = {
+						enabled: false,
+						index: 0, //nth page
+						count: 1,
+						size: 0
+					},
+					sort: sort = {
+						by: null, //currently we only support sort by one column sort
+						asc: null
+					},
+					filter: filter = {
+						by: "",
+						value: "",
+						ops: "",
+						enabled: false
+					},
+					//is query enabled
+					enabled: function() {
+						return this.get( "pager.enabled" ) || this.get( "sort.by" ) || this.get( "filter.enabled" );
+					}
+				},
+
+				queryResult: function( disablePaging ) {
+
+					//"this" refers to the queryable node but not the queryable object
+					var $items = $( items ),
+
+					//run filter
+						rtn = filterFn ? $items.filter( filterFn ).get() : $items.get();
+
+					hasQueryResultNode.update( rtn.length > 0 );
+
+					//run sort
+					if (sort.by) {
+
+						rtn.sortObject( sort.by, sort.asc );
+					}
+
+					//run paging
+					if (!disablePaging && pager.enabled) {
+						var count = Math.ceil( rtn.length / pager.size ) || 1;
+						if (count != pager.count) {
+							pager.count = count;
+							if (pager.index > pager.count - 1) {
+								pager.index = 0;
+							}
+							//
+							queryNode.triggerChange( "pager" );
+						}
+						rtn = rtn.slice( pager.index * pager.size, (pager.index + 1) * pager.size );
+					}
+
+					return rtn;
+				},
+
+				// refreshQuery can be called via queryable.refreshQuery()
+				//or it can be called via node like items*refreshQuery
+				//
+				// refreshQuery can be called regardless whether autoQuery is enabled,
+				// because internally it check the flag to determine if
+				// it is necessary to trigger the change event
+				refreshQuery: function() {
+					//if autoQuery is true, then don't need to trigger change again
+					if (!queryable.autoQuery) {
+						setTimeout( function() {
+							queryResultNode.trigger( "afterUpdate" );
+						}, 0 );
+					}
+				},
+
+				paging: function( e ) {
+
+					var index = e.eventData;
+
+					if (rDigit.test( index )) {
+
+						index = +index;
+
+					} else {
+
+						if (index == "next") {
+
+							index = pager.index + 1;
+
+						} else if (index == "previous") {
+
+							index = pager.index - 1;
+
+						} else if (index == "first") {
+
+							index = 0;
+
+						} else if (index == "last") {
+
+							index = pager.count - 1;
+
+						} else if (index == "disabled") {
+							index = 0;
+							queryable.resetPaging();
+						}
+					}
+
+					if (typeof index !== "number" || index < 0 || index > pager.count - 1) {
+						index = 0;
+					}
+
+					pagerNode.update( "index", index );
+					queryable.refreshQuery();
+				},
+
+				resetSort: function( triggerByMasterReset ) {
+					sortNode.set( "by", null )
+						.set( "asc", null );
+
+					if (triggerByMasterReset !== true) {
+						queryable.refreshQuery();
+					}
+				},
+
+				resetSearch: function( triggerByMasterReset ) {
+					filterNode.update( "by", "" )
+						.update( "value", "" )
+						.update( "ops", "" );
+
+					if (triggerByMasterReset !== true) {
+						queryable.refreshQuery();
+					}
+
+				},
+
+				resetPaging: function( triggerByMasterReset ) {
+					pagerNode.update( "enabled", false )
+						.update( "size", 0 )
+						.update( "count", 1 )
+						.update( "index", 0 );
+
+					if (triggerByMasterReset !== true) {
+						queryable.refreshQuery();
+					}
+
+				},
+
+				resetQuery: function() {
+					queryable.resetSort( true );
+					queryable.resetSearch( true );
+					queryable.resetPaging( true );
+					queryable.refreshQuery();
+				}
+			}
+		);
+
+		function buildFilterFn ( e ) {
+			var ops = filter.ops,
+				by = filter.by,
+				value = filter.value,
+				regex;
+
+			if (value) {
+
+				if (!ops) {
+					//by default it s contains
+					regex = RegExp( value, "i" );
+
+				} else if (ops == "equals") {
+
+					regex = RegExp( "^" + value + "$", "i" );
+
+				} else {
+
+					throw "operator does not supported";
+				}
+
+				filterFn = (by) ?
+					function() {
+						return regex.test( this[by] );
+					} :
+					function() {
+						if (isObject( this )) {
+							for (var key in this) {
+								if (regex.test( this[key] )) {
+									return true;
+								}
+							}
+							return false;
+						} else {
+							return regex.test( this );
+						}
+					};
+
+				filterEnabledNode.set( true );
+				queryable.refreshQuery();
+			} else {
+				if (filterFn) {
+					filterFn = null;
+					filterEnabledNode.set( false );
+					queryable.refreshQuery();
+				}
+			}
+		}
+
+		filterNode.cd( "by" ).handle( "afterUpdate", buildFilterFn );
+		filterNode.cd( "value" ).handle( "afterUpdate", buildFilterFn );
+		filterNode.cd( "ops" ).handle( "afterUpdate", buildFilterFn );
+		return this;
+	};
+
+	extend( hm.groups, {
+
+		//listView:arrayPath|rowTemplateId
+		//
+		listView: //
+
+		//subscription from view
+			"forSelf:.;" +
+				//render newly appended data item by appending it to end of the view
+			"!afterCreate.1:.|*addRowView;" +
+				//render the updated data item in the view
+			"!afterUpdate.1:.|*updateRowView;" +
+				//delete the deleted data item in the view
+			"!afterDel.1:.|*removeRowView",
+
+		initQueryable: function( elem, path, subscriptions, options ) {
+			hm( path ).initQueryable( !!options );
+		},
+
+		//render the whole list of items
+		//queryView:items
+		queryView: "forAll:*queryResult",
+
+		//sort:items|firstName
+		sortQueryButton: "$click:*query.sort.by|*hardCode;" +
+		                 "$click:*query.sort.asc|*toggle;" +
+		                 "$click:*refreshQuery",
+
+		//resetSortButton:items
+		resetSortButton: "$click:*resetSort;" +
+		                 "show:*query.sort.by",
+
+
+		//searchButton:items
+		searchButton: "$click:*refreshQuery;" +
+		              "enable:*query.filter.enabled",
+
+		resetSearchButton: "$click:*resetSearch;" +
+		                   "show:*query.filter.enabled",
+
+		resetQueryButton: "$click:*resetQuery;" +
+		                  "show:*query.enabled",
+
+		searchBox: "ns:*query.filter.value;" +
+		           "val:.|enter;" +
+		           "$esc:.|*null",
+
+		//pager:items|#pagerTemplate
+		pager: "forAll:*query.pager;" + //render pager using the data under items*query.pager
+		       "show:*hasQueryResult|_;" +
+		       "$paging:*paging;" +
+		       "preventDefault:.",
+
+		setPageButton: "true:*query.pager.enabled;" +
+		               "enable:*query.pager.size;" +
+		               "$click:*refreshQuery",
+
+		//path is ignore, does not create any subscription
+		page: function( elem, path, group, pageIndex ) {
+			if (!pageIndex) {
+				throw "pageIndex is missing";
+			}
+			$( elem ).mapEvent( "click", "paging", pageIndex );
+		},
+
+		showFound: "show:*hasQueryResult",
+
+		hideFound: "hide:*hasQueryResult"
+	} );
+
+
+
+//
+/*
+ <@depends>
+ subscription.js,
+ repository.js
+ </@depends>
+ */
+
+
+	//create a table with some seeds
+	hm.table = function( seeds ) {
+		if (isUndefined( seeds )) {
+			seeds = [];
+		} else if (!isArray( seeds )) {
+			seeds = [seeds];
+		}
+
+		if (seeds.table && seeds.guid) {
+			return seeds;
+		}
+
+		seeds.table = {};
+		seeds.guid = 0;
+		return seeds;
+	};
+
+	function handleArrayNodeUpdateDescendant ( e ) {
+
+		var table,
+			publisher = e.publisher;
+
+		if (e.level === 1) {
+			table = publisher.get().table;
+
+			//the event is caused by updating to the an item if the array
+			for (var key in table) {
+				if (table[key] == e.removed) {
+					this.set( key, e.proposed );
+					break;
+				}
+			}
+
+		} else if (e.level >= 2) {
+
+			var originalPath = e.originalPublisher.path,
+				path = publisher.path,
+				remaining = originalPath.substr( path.length + 1 ),
+				index = remaining.substr( 0, remaining.indexOf( "." ) );
+
+			if ($.isNumeric( index )) {
+
+
+				//e.g contacts.1.firstName is updated
+				//index == 1
+				//itemKey = c1
+
+				var itemKey = publisher.keyAt( index ),
+					fullPathOfKeyItem = "table." + itemKey + remaining.substr( remaining.indexOf( "." ) );
+
+				//subPath == table.c1.firstName
+				publisher.trigger( fullPathOfKeyItem, "afterUpdate", e.proposed, e.removed );
+			}
+		}
+	}
+
+	function handleArrayNodeCreateChild ( e ) {
+		this.set( "c" + e.publisher.get().guid++, e.proposed );
+	}
+
+	function handleArrayNodeDeleteChild ( e ) {
+		var table = this.get(),
+			removed = e.removed;
+
+		for (var key in table) {
+			if (table[key] === removed) {
+				this.del( key );
+				break;
+			}
+		}
+	}
+
+	function handleTableNodeDeleteChild ( e ) {
+		this.removeItem( e.removed );
+	}
+
+	function handleTableNodeUpdateChild ( e ) {
+		this.replaceItem( e.removed, e.proposed );
+	}
+
+	hm.onAddOrUpdateNode( function( context, index, array ) {
+
+		var table = isArray( array ) && array.table;
+		if (!table) {
+			return;
+		}
+
+		for (var i = 0; i < array.length; i++) {
+			table["c" + array.guid++] = array[i];
+		}
+
+		var arrayNode = hm( context ).cd( index ),
+			tableNode = arrayNode.cd( "table" );
+
+		//when item is inserted in array, insert the item in table
+		tableNode.sub( arrayNode, "afterCreate.1", handleArrayNodeCreateChild );
+
+		//when item is updated in itemsNode, update the item in table
+		tableNode.sub( arrayNode, "afterUpdate.*", handleArrayNodeUpdateDescendant );
+
+		//when item deleted in array, delete the item in hash table
+		tableNode.sub( arrayNode, "afterDel.1", handleArrayNodeDeleteChild );
+
+		//when item is deleted in table, delete the item in array
+		arrayNode.sub( tableNode, "afterDel.1", handleTableNodeDeleteChild );
+
+		//when item is updated in table, update the item in array
+		arrayNode.sub( tableNode, "afterUpdate.1", handleTableNodeUpdateChild );
+
+	} );
+
+	hmFn.itemKey = function( item ) {
+		var key,
+			table,
+			array = this.raw();
+
+		if (isFunction( array )) {
+			array = this.main().get();
+		}
+		table = array.table;
+
+		if (table) {
+			for (key in table) {
+				if (item === table[key]) {
+					return key;
+				}
+			}
+		}
+	};
+
+	hmFn.keyAt = function( index ) {
+		return this.itemKey( this.get( index ) );
+	};
+
+	//add extend hm.Type, so that when you create a new Type
+	//Person, you can call Person.table([seed1, seed2])
+	//to create a new table of Person objects
+	hm.Class.table = function( items ) {
+		return  hm.table( this.list( items ) );
+	};
+
+//
+//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+
+
+	//augment jQuery Event type
+	//when you attach a workflow to parent element to handle the event from children
+	//we want to know the children element's row index of all the rows
+	$.Event.prototype.selectedRowIndex = function() {
+		return this.publisher.children().filter( this.originalPublisher.parents() ).index();
+	};
+
+	function EditObject ( index ) {
+		this.selectedIndex = index;
+	}
+
+	EditObject.prototype = {
+		item: null,
+		//logically mode depends on "item" and "index"
+		//but here we disable these dependencies, because we want to
+		//manually trigger the events
+		//if it really depends them, the events will be hard to controlled
+		mode: function __ () {
+			var edit = this.get(),
+				item = edit.item,
+				selectedIndex = edit.selectedIndex;
+
+			return item === null ? "read" :
+				isUndefined( selectedIndex ) ? "update" :
+					(selectedIndex == -1) ? "new" :
+						"update";
+
+		}
+	};
+
+	//the follow methods are designed to be used with array model
+	// they are used to manipulate the shadow edit object of array model
+	extend( hmFn, {
+
+		//initShadowEdit is required for array model or for array query functions
+		//it is not necessary for model of other type
+		initShadowEdit: function( itemTemplate ) {
+			//it is a convention that, if the path of list data is items
+			//we take items_itemTemplate as template from new item for the list data
+
+			var model = this;
+
+			if (model.get( "*edit" )) {
+				return;
+			}
+			var itemsPath = model.path,
+				rChildShadowItem = RegExp( "^" + itemsPath.replace( ".", "\\." ) + "\\*edit\\.item[^*]+\\*$" ),
+				rDeepShadowItem = RegExp( "^" + itemsPath.replace( ".", "\\." ) + "\\*edit\\.item[\\w.]+\\*edit\\.item" );
+
+			if (isUndefined( itemTemplate )) {
+
+				if (model.isShadow() && !isFunction( model.raw() )) {
+					//if the array object items is already in shadow
+					//the itemTemplate is already defined in main items' itemTemplate
+					//for example
+					//the itemsPath is "doc.entries*edit.item.personal.signatures"
+					//the itemTemplate is defined in "doc.entries*edit.item.personal.signatures.0"
+					//the following is try to get the itemTemplate
+					//
+					//the mainModel is doc.entries
+					var mainModel = model.main();
+
+					//the editingModelPath of mainModel is doc.entries*edit.item
+					var editingModelPath = mainModel.logicalPath() + "*edit.item";
+
+					//the position of last "." in "doc.entries*edit.item."
+					var startIndex = editingModelPath.length + 1;
+
+					//the portion of "personal.signatures" in "doc.entries*edit.item.personal.signatures"
+					var subPath = toLogicalPath( itemsPath ).substr( startIndex );
+
+					//get "doc.entries*edit.itemTemplate.personal.signatures.0"
+					itemTemplate = clone( mainModel.get( "*edit.itemTemplate." + subPath + ".0" ), true );
+
+				} else {
+
+					//the convention is that if we have model at path "contacts",
+					//the template item is expected at "contacts_itemTemplate"
+					if (isFunction( model.raw() )) {
+						itemTemplate = rootNode.raw( model.main().path + "_itemTemplate" );
+					} else {
+						itemTemplate = rootNode.raw( itemsPath + "_itemTemplate" );
+					}
+
+					//if convention is not followed, use the existing as template
+					if (isUndefined( itemTemplate )) {
+						itemTemplate = clearObj( clone( model.get()[0], true ) );
+					}
+				}
+			}
+
+			var editObject = new EditObject( -1 );
+			editObject.itemTemplate = itemTemplate;
+			editObject.item = null;
+
+			model.set( "*edit", editObject );
+
+			//we want to trigger beginInRowUpdate/cancelInRowUpdate after selectedIndex has changed
+			//because the handlers depends on the availability of selectedIndex
+			model.cd( "*edit.selectedIndex" ).handle( "afterUpdate", function( e ) {
+
+				var newIndex = e.proposed,
+					oldIndex = e.removed;
+
+				if (newIndex >= 0) {
+
+					model.trigger( "beginInRowUpdate", newIndex );
+
+				} else if (newIndex == -1) {
+
+					model.trigger( "cancelInRowUpdate", oldIndex );
+				}
+			} );
+
+			model.cd( "*edit.item" ).handle( "afterUpdate", function( e ) {
+				var key, logicalPath, editObject;
+
+				for (key in shadowRoot) {
+
+					logicalPath = util.toLogicalPath( "__hm." + key );
+
+					if (rDeepShadowItem.test( logicalPath )) {
+
+						delete shadowRoot[key];
+
+					} else if (rChildShadowItem.test( logicalPath )) {
+
+						editObject = shadowRoot[key].edit;
+
+						if (editObject) {
+							editObject.item = null;
+							editObject.selectedIndex = -1;
+						}
+					}
+				}
+			} );
+			return this;
+		},
+
+		//create a new item in shadow edit object for items model
+		//not necessary for model of primitive type and objects
+		newShadowItem: function() {
+			if (this.get( "*edit.mode" ) !== "read") {
+				this.resetShadowItem();
+			}
+
+			var editShadowModel = this.cd( "*edit" ),
+				itemTemplate = editShadowModel.raw( "itemTemplate" ),
+				item = (isFunction( itemTemplate )) ?
+					itemTemplate() :
+					clone( itemTemplate, true );
+
+			editShadowModel.update( "item", item );
+			editShadowModel.triggerChange( "mode" );
+		},
+
+		editShadowItem: function( item, itemIndex ) {
+
+			var itemValue = this.raw();
+			if (isPrimitive( itemValue ) || isObject( itemValue )) {
+
+				var edit = this.get( "*edit" );
+				if (isUndefined( edit )) {
+					edit = new EditObject();
+					this.set( "*edit", edit );
+				}
+
+				if (edit.item !== null) {
+					return;
+				}
+
+				this.set( "*edit.item", clone( itemValue, true ) );
+				this.triggerChange( "*edit.mode" );
+
+			} else {
+
+				if (this.get( "*edit.mode" ) !== "read") {
+					this.resetShadowItem();
+				}
+
+				if (isUndefined( itemIndex )) {
+					itemIndex = this.indexOf( item );
+				} else {
+					item = this.get()[itemIndex];
+				}
+
+				var editShadowModel = this.cd( "*edit" ),
+					itemTemplate = editShadowModel.raw( "itemTemplate" ),
+					copy = (isFunction( itemTemplate )) ?
+						itemTemplate( item ) :
+						clone( item, true );
+
+				editShadowModel.update( "item", copy )
+					.update( "selectedIndex", itemIndex );
+
+				editShadowModel.triggerChange( "mode" );
+			}
+
+		},
+
+		resetShadowItem: function( save ) {
+			if (this.path.endsWith( ".edit.item" )) {
+				return this.main().resetShadowItem();
+			}
+
+			var items = this.raw();
+			if (isPrimitive( items ) || isObject( items )) {
+
+				this.set( "*edit.item", null );
+				this.triggerChange( "*edit.mode" );
+
+			} else {
+
+				var edit = this.cd( "*edit" );
+				if (!isUndefined( edit.get() )) {
+
+					edit.update( "item", null );
+
+					if (save) {
+						//if it triggered by saveShadowItem
+						//update selectedIndex directly to avoid events
+						edit.get().selectedIndex = -1;
+					} else {
+						edit.update( "selectedIndex", -1 );
+					}
+
+					edit.triggerChange( "mode" );
+				}
+			}
+
+		},
+
+		saveShadowItem: function() {
+
+			if (this.path.endsWith( ".edit.item" )) {
+				return this.main().saveShadowItem();
+			}
+
+			var items = this.raw();
+
+			if (isPrimitive( items ) || isObject( items )) {
+
+				this.set( this.get( "*edit.item" ) )
+					.set( "*edit.item", null );
+
+				this.triggerChange( "*edit.mode" );
+
+			} else {
+
+				var currentEditMode = this.get( "*edit.mode" ),
+					pendingItem = this.get( "*edit.item" );
+
+				if (currentEditMode == "read") {
+
+					throw "invalid operations";
+
+				} else if (currentEditMode == "new") {
+
+					if (isFunction( items )) {
+						//this is case when items is model*queryResult
+						this.main().push( pendingItem );
+
+					} else {
+						this.push( pendingItem );
+					}
+
+					this.resetShadowItem();
+
+				} else /*if (currentEditMode == "update")*/ {
+
+					var selectedIndex = this.get( "*edit.selectedIndex" );
+
+					if (isFunction( items )) {
+						//this is case when items is model*queryResult
+						items = this.get();
+						this.main().replaceItem(
+							items[selectedIndex],
+							pendingItem
+						);
+					} else {
+						this.replaceItem(
+							items[selectedIndex],
+							pendingItem
+						);
+					}
+					this.resetShadowItem( true );
+				}
+
+			}
+		}
+	} );
+
+	hm.workflowType( {
+
+		//------workflows that modify model------
+
+		//$click:items|*editShadowItem
+		//$click:items*queryResult|*editShadowItem
+		newShadowItem: "*skipGet newShadowItem",
+
+		//$click:item|*editShadowItem
+		//$editRow:items|*editShadowItem
+		//$editRow:items*queryResult|*editShadowItem
+		editShadowItem: function( e ) {
+			if (e.type == "editRow") {
+				//this trigger by edit button
+				this.editShadowItem( null, e.selectedRowIndex() );
+			} else {
+				if (this.path.endsWith( ".edit.item" )) {
+					this.main().editShadowItem( this.get() );
+				} else {
+					this.editShadowItem();
+				}
+			}
+			e.stopPropagation();
+		},
+
+		//"$delete:items|*removeItem;"
+		//"$delete:items*queryResult|*removeItem;"
+		removeItem: function( e ) {
+			if (this.get( "*edit.mode" ) != "read") {
+				this.resetShadowItem();
+			}
+			var index = e.selectedRowIndex();
+			var items = this.raw();
+			if (isFunction( items )) {
+				//this is case when items is model*queryResult
+				items = this.get();
+				this.main().removeItem( items[index] );
+			} else {
+				this.removeAt( index );
+			}
+			e.stopPropagation();
+		},
+
+		//$moveUp:items|*moveUpItem;
+		moveUpItem: function( e ) {
+			var selectedIndex = e.selectedRowIndex();
+			this.move( selectedIndex, selectedIndex - 1 );
+			e.stopPropagation();
+		},
+
+		//$moveUp:items|*moveUpItem;
+		moveDownItem: function( e ) {
+			var selectedIndex = e.selectedRowIndex();
+			this.move( selectedIndex, selectedIndex + 1 );
+			e.stopPropagation();
+		},
+
+		//------workflows that modify views------
+
+		//!afterUpdate:items*edit.mode|*renderNewView;
+		//!afterUpdate:items*queryResult*edit.mode|*renderNewView;
+		renderNewView: newTemplateWorkflow(
+			function( e ) {
+				if (e.publisher.get() == "new") {
+					return e.publisher.main().get( "*edit.item" );
+				}
+			}
+			/*set activity is by default html*/
+
+		),
+
+		//"!beginInRowUpdate:items|*renderUpdateRowView;"
+		//"!beginInRowUpdate:items*queryResult|*renderUpdateRowView;"
+		renderUpdateRowView: newTemplateWorkflow(
+			//get activity
+			function( e ) {
+				return e.publisher.get( "*edit.item" );
+			},
+			//set activity
+			function( value, e ) {
+				//e.proposed is the index of the edit item
+				this.children().eq( e.proposed ).replaceWith( value );
+			} ),
+
+		//"!beginInRowUpdate:items|*renderUpdateRowView;"
+		//"!beginInRowUpdate:items*queryResult|*renderUpdateRowView;"
+		destroyUpdateRowView: function( e ) {
+			e.publisher.triggerChange( e.proposed );
+		},
+
+		//$click:items*edit.item|*saveShadowItem;
+		//$click:items*queryResult*edit.item|*saveShadowItem;
+		saveShadowItem: function( e ) {
+			this.saveShadowItem();
+			e.stopPropagation();
+		},
+
+		//$click:items*edit.item|*resetShadowItem;
+		//$click:items*queryResult*edit.item|*resetShadowItem;
+		resetShadowItem: function( e ) {
+			this.resetShadowItem();
+			e.stopPropagation();
+		}
+	} );
+
+	extend( hm.groups, {
+
+
+		// shadowEdit:items|rowTemplateId or
+		// shadowEdit:items*queryResult|rowTemplateId
+		shadowEdit: "!init:.|initShadowEdit *skipSet;" +
+		            "deleteRow:.;" +
+		            "$editRow:.|*editShadowItem",
+
+		// shadowEditInRow:items|updateRowTemplateId or
+		// shadowEditInRow:items*queryResult|updateRowTemplateId
+		shadowEditInRow: "shadowEdit:.;" +
+		                 "!beginInRowUpdate:.|*renderUpdateRowView;" +
+		                 "!cancelInRowUpdate:.|*destroyUpdateRowView",
+
+		deleteRow: "$deleteRow:.|*confirm|_Do you want to delete this item?;" +
+		           "$deleteRow:.|*removeItem;",
+		//movableRow:items
+		movableRow: "$moveUp:.|*moveUpItem;" +
+		            "$moveDown:.|*moveDownItem;",
+
+		//newItemView:items
+		//newItemView:items*queryResult
+		newItemView: "!afterUpdate:*edit.mode|*renderNewView;" +
+		             "showOnNew:.",
+
+		//showOnNew:items
+		//showOnNew:items*queryResult
+		showOnNew: "show:*edit.mode|_new",
+
+		//hideOnNew:items
+		//hideOnNew:items*queryResult
+		hideOnNew: "hide:*edit.mode|_new",
+
+		//editItemView:items
+		//editItemView:items*queryResult
+		editItemView: "forSelf:*edit.item;" +
+		              "showOnEdit:.",
+
+		displayItemView: "forSelf:.;hideOnEdit:.",
+
+		//showOnEdit:items
+		//showOnEdit:items*queryResult
+		//showOnEdit: "hide:*edit.mode|_read",
+		showOnEdit: function( elem, path, group, options ) {
+			group.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
+				var mode = e.publisher.get();
+				this[(isUndefined( mode ) || mode == "read") ? "hide" : "show"]();
+			} );
+		},
+
+		//hideOnEdit:items
+		//hideOnEdit:items*queryResult
+		//hideOnEdit: "show:*edit.mode|_read",
+		hideOnEdit: function( elem, path, group, options ) {
+			group.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
+				var mode = e.publisher.get();
+				this[(isUndefined( mode ) || mode == "read") ? "show" : "hide"]();
+			} );
+		},
+
+		//newItem:items
+		//newItem:items*queryResult
+		newItem: "$click:.|*newShadowItem;" +
+		         "hideOnNew:.",
+
+		//editButton:item
+		//this is only used non-array item edit
+		editObject: "$click:.|*editShadowItem;hideOnEdit:.",
+
+
+		//saveButton:items*edit.item
+		//saveButton:items*queryResult*edit.item
+		saveButton: "$click:.|*saveShadowItem",
+
+		//cancelSaveButton:items*edit.item
+		//cancelSaveButton:items*queryResult*edit.item
+		cancelSaveButton: "$click:.|*resetShadowItem"
+
+	} );
+
+	hm.newViewEvent( {
+
+		editRow: ["click", function( e ) {
+			return $( e.target ).hasClass( "editRow" );
+		}],
+
+		deleteRow: ["click", function( e ) {
+			return $( e.target ).hasClass( "deleteRow" );
+
+		}],
+
+		moveUp: ["click", function( e ) {
+			return $( e.target ).hasClass( "moveUp" );
+		}],
+
+		moveDown: ["click", function( e ) {
+			return $( e.target ).hasClass( "moveDown" );
+		}]
+	} );
+
+//
+/*
+ <@depends>
+ subscription.js,
+ repository.js,
+ declarative.js,
+ template.js,
+ https://raw.github.com/cowboy/jquery-bbq/v1.2.1/jquery.ba-bbq.js
+ </@depends>
+ */
+
+
+	if ($.bbq) {
+
+		var statefulModelPaths = [],
+			bbqGetState = $.bbq.getState,
+			bbqPushState = $.bbq.pushState,
+			pushModelState = function( path ) {
+				path = isObject( path ) ? toLogicalPath( path.publisher.path ) : path;
+				var model = {};
+				model[path] = rootNode.get( path );
+				bbqPushState( model );
+			};
+
+		//bookmarkable should be called after model initialization
+		//and before parsing, so that the state in url can be restored
+		hm.bookmarkable = function( /* path1, path2, .. */ ) {
+
+			var i,
+				path,
+				hmState = bbqGetState(),
+				model = {};
+
+			for (i = 0; i < arguments.length; i++) {
+				path = arguments[i];
+				if (path in hmState) {
+					//the states in url will override the state in model
+					rootNode.set( path, hmState[path] );
+				}
+
+				hm.sub( null, path, "afterUpdate", pushModelState );
+				statefulModelPaths.push( path );
+			}
+
+			for (i = 0; i < statefulModelPaths.length; i++) {
+				path = toLogicalPath( statefulModelPaths[i] );
+				model[path] = rootNode.get( path );
+			}
+
+			var url = $.param.fragment( location.href, model );
+			if (history.replaceState) {
+				history.replaceState( null, null, url );
+			} else {
+				//this is known issue that, the intermediate url cannot be replaced
+				//with the final url prior to IE10
+				location.href = url;
+			}
+			return this;
+		};
+
+		hmFn.bookmarkable = function( subPath ) {
+
+			var model = this;
+
+			hm.bookmarkable.apply( hm, $.map( subPath ? arguments : [""], function( subPath ) {
+				return model.getPath( subPath );
+			} ) );
+
+			return model;
+
+		};
+
+		$( window ).bind( "hashchange", function() {
+			var hmState = bbqGetState();
+			for (var path in hmState) {
+				if (statefulModelPaths.contains( path )) {
+					rootNode.set( path, hmState[path] );
+				}
+			}
+		} );
+	}
+
+//
+//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//
+
+
+
+	defaultOptions.selectedClass = "selected";
+	defaultOptions.tabViewAttr = "data-tabView";
+	defaultOptions.tabLinkAttr = "data-tabLink";
+	defaultOptions.tabGroupAttr = "data-tabGroup";
+
+	hm.workflowType( {
+
+		//a tab can be tabView or tabLink
+		highlightTab: function( e ) {
+			var tabId = this.attr( defaultOptions.tabViewAttr ) || this.attr( defaultOptions.tabLinkAttr ),
+				selectedClass = e.workflow.options || defaultOptions.selectedClass;
+
+			if (e.publisher.get() == tabId) {
+				this.addClass( selectedClass );
+			} else {
+				this.removeClass( selectedClass );
+			}
+		},
+
+		//a tab can be tabView or tabLink
+		highlightTabInContainer: function( e ) {
+			var selectedTabId = e.publisher.get(),
+				tabViewAttr = defaultOptions.tabViewAttr,
+				tabLinkAttr = defaultOptions.tabLinkAttr,
+				options = e.workflow.options,
+				tabLinkAndTabViewSelector = options.selector,
+				selectedClass = options.selectedClass || defaultOptions.selectedClass;
+
+			this.find( tabLinkAndTabViewSelector ).andSelf().each( function( index, elem ) {
+				var $elem = $( elem ),
+					tabId = $elem.attr( tabViewAttr ) || $elem.attr( tabLinkAttr );
+
+				if (tabId == selectedTabId) {
+					$elem.addClass( selectedClass );
+				} else {
+					$elem.removeClass( selectedClass );
+				}
+			} );
+		}
+	} );
+
+	//a tab can be tabView or tabLink
+	//for tabLink use <li data-tabLink="news" data-sub="tab:category">News</li>
+	//for tabView use <div data-tabView="news" data-sub="tab:category">contents</div>
+	hm.groups.tab = function( elem, path, group, selectedClass ) {
+
+		group.appendSub( elem, path, "init afterUpdate", "*highlightTab", selectedClass );
+
+		if ($( elem ).attr( defaultOptions.tabLinkAttr )) {
+			group.appendSub( path, elem, "click", handleTabLinkClick, defaultOptions.tabLinkAttr );
+		}
+
+	};
+
+	function handleTabLinkClick ( e ) {
+		this.set( e.publisher.attr( e.workflow.options ) );
+		e.preventDefault();
+		e.stopPropagation();
+
+	}
+
+	//a tabContainer can hold tabLink or tabView
+	//it can be
+	//<ul data-sub="tabContainer:category">
+	//	<li data-tabLink="news">News</li>
+	//	<li data-tabLink="opinion">Opinion</li>
+	//	<li data-tabLink="sports">Sports</li>
+	//</ul>
+	//
+	//<div class="tabs" data-sub="tabContainer:category">
+	//	<div data-tabView="news">content</div>
+	//	<div data-tabView="opinion">content</div>
+	//</div>
+	hm.groups.tabContainer = function( elem, path, group, tabGroupAndSelectedClass ) {
+
+		tabGroupAndSelectedClass = tabGroupAndSelectedClass || "";
+		tabGroupAndSelectedClass = tabGroupAndSelectedClass.split( "," );
+
+		var tabViewAttr = defaultOptions.tabViewAttr,
+			tabLinkAttr = defaultOptions.tabLinkAttr,
+			tabGroupAttr = defaultOptions.tabGroupAttr,
+			tabGroupSelector = tabGroupAndSelectedClass[0] ? "[" + tabGroupAttr + "='" + tabGroupAndSelectedClass[0] + "']" : "",
+			tabLinkSelector = "[" + tabLinkAttr + "]" + tabGroupSelector,
+			tabLinkAndTabViewSelector = tabLinkSelector + ",[" + tabViewAttr + "]" + tabGroupSelector;
+
+		//update the tab model with the tabLink when click
+		group.appendSub( path, elem, "click", handleTabLinkClick, tabLinkAttr, tabLinkSelector /*delegateSelector*/ );
+
+		//
+		//highlight the tab when the path change
+		group.appendSub( elem, path, "init100 afterUpdate", "*highlightTabInContainer", {
+			selector: tabLinkAndTabViewSelector,
+			selectedClass: tabGroupAndSelectedClass[1]
+		} );
+	};
+
+//data-sub="@app:appName,options"
+
+
+	var appStore = {},
+	//used to match "appName,options"
+		rAppOptions = /^([^,]+)(,(.+))?$/,
+		rLoadAppOptions = /^([^,]+)(,([^,]+))?(,(.+))?$/;
+
+	//you app should implement load(elem, options) and unload(elem) method
+
+	hm.App = hm.Class.extend(
+
+		{
+			//it add additional logic beside the original load method
+			//such as instance counting, instance association with the container
+			//prepare to unload from the container
+			bootstrap: function(viewContainer, modelContainer, options) {
+				if (!viewContainer || !this.loadable()) {
+					return;
+				}
+				var app = this,
+					buildModelResult,
+					appName = app.name,
+					appInstance = instanceManager.get( viewContainer, appName );
+
+				//ensure that an application can be loaded into a container only once
+				if (!appInstance) {
+					if (app.buildRootModel !== false) {
+						buildModelResult = app.buildRootModel( modelContainer, options );
+
+					}
+
+					if (isPromise( buildModelResult )) {
+						buildModelResult.done( function() {
+							app.buildRootView( viewContainer, modelContainer );
+
+						} );
+					} else {
+						app.buildRootView( viewContainer, modelContainer );
+
+					}
+
+					instanceManager.add( viewContainer, modelContainer, appName, app );
+
+					//pass appName using namespace of event name to the event handler
+					$( viewContainer ).bind( "shutdown." + appName, function(e) {
+						app.shutdown( this, e.namespace );
+						e.stopPropagation();
+					} );
+
+					app.instanceCount++;
+				}
+			},
+
+			shutdown: function(viewContainer, modelContainer) {
+
+				var appName = this.name;
+
+				this.destroyRootView( viewContainer );
+				this.destroyRootModel( modelContainer );
+
+				instanceManager.remove( viewContainer, appName );
+
+				$( viewContainer ).unbind( "shutdown." + appName );
+
+				this.instanceCount--;
+			},
+
+			//function( modelContainer, options ) {}
+			fetchRootData: null,
+
+			buildRootModel: function(modelContainer, options) {
+				var app = this;
+				if (!app.fetchRootData) {
+					throw "app.fetchRootData is not implemented";
+				}
+
+				var data = app.fetchRootData( modelContainer, options );
+
+				if (isPromise( data )) {
+					return data.done( function(data) {
+						hm.set( app.getNamespace( modelContainer ), data );
+					} );
+				} else {
+					hm.set( app.getNamespace( modelContainer ), data );
+				}
+
+			},
+
+			destroyRootModel: function(modelContainer) {
+				if (this.buildRootModel !== false) {
+					hm( modelContainer ).del( this.name );
+				}
+			},
+
+			buildRootView: function(viewContainer, modelContainer) {
+
+				$( viewContainer ).renderContent(
+					this.getTemplateOptions(),
+					this.getNamespace( modelContainer ) );
+
+			},
+
+			destroyRootView: function(viewContainer) {
+				$( viewContainer ).empty();
+			},
+
+			getTemplateOptions: function() {
+				return this.templateOptions || this.name;
+
+			},
+
+			getNamespace: function(modelContainer) {
+				return hm( modelContainer ).getPath( this.subPath || this.name );
+			},
+
+			initialize: function(seed) {
+
+				if (!seed.name) {
+					throw "An app must have a name.";
+				}
+				this.callBase( "initialize", seed );
+
+			},
+
+			instanceCount: 0,
+
+			//if we want to use singleton use the following
+			//		loadable: function() {
+			//			return !this.instanceCount;
+			//		},
+			loadable: returnTrue,
+
+			templateOptions: null,
+
+			subPath: null
+
+
+		},
+
+		{
+
+			//hm.App.register({
+			//  name: "gmail", //you must have a name
+			//  load: function (viewContainer, modelContainer, options) {},
+			//  unload: function (viewContainer, modelContainer) {}, //optional
+			//  //optional, by default it is not loadable if it has been loaded once
+			//  //if it is loadable: true , it means it is always loadable
+			//  loadable: function () {},
+			// });
+			add: function(app) {
+				if (!(app instanceof this)) {
+					app = this( app );
+				}
+				appStore[app.name] = app;
+			},
+
+			remove: function(appName) {
+				if (appStore[appName] && !appStore[appName].instanceCount) {
+					delete appStore[appName];
+				}
+			},
+
+			get: function(appName) {
+				return appStore[appName];
+			},
+
+			//support the following feature
+			//by default container is body, if container is missing
+			//hm.App.bootstrap(appName);
+			//
+			//hm.App.bootstrap(appName, viewContainer); //viewContainer is jQuery
+			//hm.App.bootstrap(appName, modelContainer); //modelContainer is string
+			//
+			//container is jQuery object, or DOM element
+			//appName is string,
+			//options is optional
+			bootstrap: function(appName, viewContainer, modelContainer, options) {
+
+				if (arguments.length == 1) {
+
+					viewContainer = document.body;
+					modelContainer = "";
+
+				} else if (arguments.length == 2) {
+
+					if (viewContainer.jquery) {
+
+						viewContainer = viewContainer[0];
+						modelContainer = "";
+
+					} else if (isString( viewContainer )) {
+
+						modelContainer = viewContainer;
+						viewContainer = document.body;
+						modelContainer = "";
+					}
+				}
+
+				var app = appStore[appName];
+
+				if (app) {
+
+					app.bootstrap( viewContainer, modelContainer, options );
+
+				} else {
+
+					if (!this.fetch) {
+						throw "hm.App.fetch is not implemented";
+					}
+
+					this.fetch( appName ).done( function() {
+						appStore[appName].bootstrap( viewContainer, modelContainer, options );
+					} );
+				}
+			},
+
+			//container by default is document.body
+			//hm.App.shutdown(appName)
+			//hm.App.shutdown(container, appName);
+			shutdown: function(appName, viewContainer) {
+				if (isUndefined( appName )) {
+					appName = viewContainer;
+					viewContainer = document.body;
+				}
+
+				var appInstance = instanceManager.get( viewContainer, appName );
+				if (appInstance) {
+					appInstance.app.shutdown( viewContainer, appInstance.modelContainer );
+				}
+			}
+
+		} );
+
+	var instanceManager = {
+
+		get: function(container, appName) {
+			return this.appData( container )[appName];
+		},
+
+		add: function(viewContainer, modelContainer, appName, app) {
+			this.appData( viewContainer )[appName] = {
+				app: app,
+				modelContainer: modelContainer
+			};
+		},
+
+		remove: function(container, appName) {
+			delete this.appData( container )[appName];
+		},
+
+		appData: function(container, readOnly) {
+			var appData = $( container ).hmData( "app" );
+			if (!readOnly && !appData) {
+				appData = { };
+				$( container ).hmData( "app", appData );
+			}
+			return appData;
+		}
+	};
+
+	extend( hm.groups, {
+		//data-sub="app:/|gmail,options"
+		app: function(elem, path, subscriptions, options) {
+
+			var optionParts = rAppOptions.exec( $.trim( options ) ),
+				appName = optionParts[1],
+				otherOptions = optionParts[3];
+
+			hm.App.bootstrap( appName, elem, path, otherOptions );
+		},
+
+		//load an app when click
+		//data-sub="bootstrap:/|gmail,#containerId,options"
+		bootstrap: function(elem, path, subscripiptions, options) {
+
+			var optionParts = rLoadAppOptions.exec( $.trim( options ) ),
+				appName = optionParts[1],
+				container = $( optionParts[3] )[0],
+				otherOptions = optionParts[5];
+
+			$( elem ).click( function() {
+				hm.App.bootstrap( appName, container, path, otherOptions );
+			} );
+		},
+
+		//unload an app when click
+		//data-sub="shutdown:_|gmail,#container"
+		shutdown: function(elem, path, subscripiptions, options) {
+
+			var optionParts = rLoadAppOptions.exec( $.trim( options ) ),
+				appName = optionParts[1],
+				container = $( optionParts[3] )[0];
+
+			$( elem ).click( function() {
+				hm.App.shutdown( appName, container );
+			} );
+		},
+
+		//unload app from parent container
+		//data-sub="selfShutdown:_|gmail"
+		selfShutdown: function(elem, parseContext, subscriptions, options) {
+			$( elem ).mapEvent( "click", "shutdown." + options );
+		}
+
+	} );
+
+	var _cleanDataForApp = $.cleanData;
+
+	$.cleanData = function(elems) {
+		$( elems ).each( function() {
+			var appData = instanceManager.appData( this, true );
+			if (appData) {
+				for (var key in appData) {
+					var app = appData[key];
+					delete appData[key];
+					app.unload( this, true );
+				}
+			}
+		} );
+		_cleanDataForApp( elems );
+	};
+
+	if (isUndefined( matrix )) {
+
+		matrix.loader.set( "app", "js", {
+			url: "folder"
+		} );
+
+		hm.App.fetch = function(appName) {
+			return matrix( appName + ".app" );
+		};
+	}
 
 
 

@@ -14,7 +14,7 @@ if (!matrix.baseUrl) {
 	matrix.baseUrl = "../assets/";
 }
 
-matrix.hash( 13 );
+matrix.hash( 15 );
 
 matrix( true,
 	"prettify/prettify.css," +

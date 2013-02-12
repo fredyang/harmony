@@ -3,25 +3,34 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Thu Feb 7 23:03:54 2013 -0500
+  * Date: Mon Feb 11 21:46:34 2013 -0500
   */
-(function( $, window, undefined ) {
+(function($, window, undefined) {
 	"use strict";
 
+	/*jshint smarttabs:true, evil:true, expr:true, newcap: false, validthis: true */
 	/**
 	 * a wrapper over a Node constructor,
 	 * [value] is optional
 	 */
-	var hm = window.hm = function( path, value ) {
+	var hm = window.hm = function(path, value) {
 			return new Node( path, value );
 		},
-		Node = function( path, value ) {
+		Node = function(path, value) {
 			path = path || "";
 			this.path = toPhysicalPath( path, true /* create shadow if necessary */ );
 			if (!isUndefined( value )) {
 				this.set( value );
 			}
 		},
+		document = window.document,
+		localStorage = window.localStorage,
+		setTimeout = window.setTimeout,
+		history = window.history,
+		location = window.location,
+		alert = window.alert,
+		confirm = window.confirm,
+		matrix = window.matrix,
 		hmFn,
 		extend = $.extend,
 		repository = {},
@@ -78,7 +87,7 @@
 
 
 
-	function augment ( prototype, extension ) {
+	function augment (prototype, extension) {
 		for (var key in extension) {
 			if (!prototype[key]) {
 				prototype[key] = extension[key];
@@ -87,7 +96,7 @@
 	}
 
 	augment( arrayPrototype, {
-		indexOf: function( obj, start ) {
+		indexOf: function(obj, start) {
 			for (var i = (start || 0); i < this.length; i++) {
 				if (this[i] == obj) {
 					return i;
@@ -96,11 +105,11 @@
 			return -1;
 		},
 
-		contains: function( item ) {
+		contains: function(item) {
 			return (this.indexOf( item ) !== -1);
 		},
 
-		remove: function( item ) {
+		remove: function(item) {
 			var position = this.indexOf( item );
 			if (position != -1) {
 				this.splice( position, 1 );
@@ -108,19 +117,19 @@
 			return this;
 		},
 
-		removeAt: function( index ) {
+		removeAt: function(index) {
 			this.splice( index, 1 );
 			return this;
 		},
 
-		pushUnique: function( item ) {
+		pushUnique: function(item) {
 			if (!this.contains( item )) {
 				this.push( item );
 			}
 			return this;
 		},
 
-		merge: function( items ) {
+		merge: function(items) {
 			if (items && items.length) {
 				for (var i = 0; i < items.length; i++) {
 					this.pushUnique( items[i] );
@@ -130,7 +139,7 @@
 		},
 		//it can be sortObject()
 		//sortObject(by)
-		sortObject: function( by, asc ) {
+		sortObject: function(by, asc) {
 			if (isUndefined( asc )) {
 				if (isUndefined( by )) {
 					asc = true;
@@ -146,7 +155,7 @@
 			}
 
 			if (by) {
-				this.sort( function( a, b ) {
+				this.sort( function(a, b) {
 					var av = a[by];
 					var bv = b[by];
 					if (av == bv) {
@@ -163,25 +172,25 @@
 	} );
 
 	augment( stringPrototype, {
-		startsWith: function( text ) {
+		startsWith: function(text) {
 			return this.indexOf( text ) === 0;
 		},
-		contains: function( text ) {
+		contains: function(text) {
 			return this.indexOf( text ) !== -1;
 		},
-		endsWith: function( suffix ) {
+		endsWith: function(suffix) {
 			return this.indexOf( suffix, this.length - suffix.length ) !== -1;
 		},
-		supplant: function( obj ) {
+		supplant: function(obj) {
 			return this.replace( rSupplant,
-				function( a, b ) {
+				function(a, b) {
 					var r = obj[b];
 					return typeof r ? r : a;
 				} );
 		},
 		format: function() {
 			var source = this;
-			$.each( arguments, function( index, value ) {
+			$.each( arguments, function(index, value) {
 				source = source.replace( new RegExp( "\\{" + index + "\\}", "g" ), value );
 			} );
 			return source;
@@ -201,7 +210,7 @@
 		//
 		//does not support the following, as will be implemented as get((subPath = p1), p2)
 		//get(p1, p2)
-		get: function( subPath /*, p1, p2, .. for parameters of model functions*/ ) {
+		get: function(subPath /*, p1, p2, .. for parameters of model functions*/) {
 
 			var currentValue, accessor = this.accessor( subPath, true );
 
@@ -236,7 +245,7 @@
 			return JSON.stringify( this.get.apply( this, slice.call( arguments ) ) );
 		},
 
-		raw: function( subPath, value ) {
+		raw: function(subPath, value) {
 			var accessor;
 			if (isFunction( subPath )) {
 				value = subPath;
@@ -263,10 +272,10 @@
 		//the function context is bound to current proxy's parent
 		//what is different for get function is that, set will return a proxy
 		//and get will return the result of the function
-		set: function( force, subPath, value ) {
+		set: function(force, subPath, value) {
 			//allow set(path, undefined)
 			if (arguments.length == 1) {
-				if (this.path == "") {
+				if (this.path === "") {
 					throw "root object can not changed";
 				} else {
 					rootNode.set( this.path, force, subPath );
@@ -303,7 +312,7 @@
 			}
 		},
 
-		accessor: function( subPath, readOnly /*internal use only*/ ) {
+		accessor: function(subPath, readOnly /*internal use only*/) {
 			//if it is not readOnly, and access out of boundary, it will throw exception
 			if (subPath === 0) {
 				subPath = "0";
@@ -354,7 +363,7 @@
 			};
 		},
 
-		create: function( force, subPath, value, accessor /* accessor is used internally */ ) {
+		create: function(force, subPath, value, accessor /* accessor is used internally */) {
 
 			if (!isBoolean( force )) {
 				accessor = value;
@@ -405,7 +414,7 @@
 			return this;
 		},
 
-		extend: function( subPath, object ) {
+		extend: function(subPath, object) {
 			var newModel;
 			if (!object) {
 				object = subPath;
@@ -424,10 +433,10 @@
 		//update(subPath, value)
 		//most of the time force is not used, by default is it is false
 		//by in case you want to bypass validation you can explicitly set to true
-		update: function( force, subPath, value, accessor ) {
+		update: function(force, subPath, value, accessor) {
 
 			if (arguments.length == 1) {
-				if (this.path == "") {
+				if (this.path === "") {
 					throw "root object can not updated";
 				} else {
 					rootNode.update( this.path, force );
@@ -476,7 +485,7 @@
 			return this;
 		},
 
-		del: function( subPath ) {
+		del: function(subPath) {
 			if (isUndefined( subPath )) {
 				if (this.path) {
 					return rootNode.del( this.path );
@@ -512,7 +521,7 @@
 			return removedValue;
 		},
 
-		createIfUndefined: function( subPath, value ) {
+		createIfUndefined: function(subPath, value) {
 			if (isUndefined( value )) {
 				throw "missing value argument";
 			}
@@ -523,12 +532,12 @@
 		},
 
 		//navigation methods
-		pushStack: function( newNode ) {
+		pushStack: function(newNode) {
 			newNode.previous = this;
 			return newNode;
 		},
 
-		cd: function( relativePath ) {
+		cd: function(relativePath) {
 			return this.pushStack( hm( this.getPath( relativePath ) ) );
 		},
 
@@ -540,7 +549,7 @@
 			return this.cd( "*" );
 		},
 
-		sibling: function( path ) {
+		sibling: function(path) {
 			return this.cd( ".." + path );
 		},
 
@@ -550,18 +559,18 @@
 		},
 
 		//--------------path methods---------------
-		getPath: function( subPath ) {
+		getPath: function(subPath) {
 			//join the context and subPath together, but it is still a logical path
 			return mergePath( this.path, subPath );
 		},
 
 		//to get the logicalPath of current model, leave subPath empty
-		logicalPath: function( subPath ) {
+		logicalPath: function(subPath) {
 			return toLogicalPath( this.getPath( subPath ) );
 		},
 
 		//to get the physicalPath of current model, leave subPath empty
-		physicalPath: function( subPath ) {
+		physicalPath: function(subPath) {
 			return toPhysicalPath( this.getPath( subPath ) );
 		},
 
@@ -574,7 +583,7 @@
 		},
 
 		//call the native method of the wrapped value
-		invoke: function( methodName /*, p1, p2, ...*/ ) {
+		invoke: function(methodName /*, p1, p2, ...*/) {
 			if (arguments.length === 0) {
 				throw "methodName is missing";
 			}
@@ -584,15 +593,15 @@
 		},
 
 		//region array methods
-		indexOf: function( item ) {
+		indexOf: function(item) {
 			return this.get().indexOf( item );
 		},
 
-		contains: function( item ) {
+		contains: function(item) {
 			return (this.indexOf( item ) !== -1);
 		},
 
-		first: function( fn ) {
+		first: function(fn) {
 			return fn ? this.filter( fn )[0] : this.get( "0" );
 		},
 
@@ -601,18 +610,18 @@
 			return value[value.length - 1];
 		},
 
-		push: function( item ) {
+		push: function(item) {
 			return this.create( this.get().length, item );
 		},
 
-		pushRange: function( items ) {
+		pushRange: function(items) {
 			for (var i = 0; i < items.length; i++) {
 				this.push( items[i] );
 			}
 			return this;
 		},
 
-		pushUnique: function( item ) {
+		pushUnique: function(item) {
 			return !this.contains( item ) ?
 				this.push( item ) :
 				this;
@@ -626,23 +635,23 @@
 			return this.del( 0 );
 		},
 
-		unshift: function( item ) {
+		unshift: function(item) {
 			return this.create( 0, item );
 		},
 
-		insertAt: function( index, item ) {
+		insertAt: function(index, item) {
 			return this.create( index, item );
 		},
 
-		updateAt: function( index, item ) {
+		updateAt: function(index, item) {
 			return this.update( index, item );
 		},
 
-		removeAt: function( index ) {
+		removeAt: function(index) {
 			return this.del( index );
 		},
 
-		move: function( fromIndex, toIndex ) {
+		move: function(fromIndex, toIndex) {
 			var count = this.count();
 
 			if (fromIndex !== toIndex &&
@@ -656,7 +665,7 @@
 			return this;
 		},
 
-		replaceItem: function( oldItem, newItem ) {
+		replaceItem: function(oldItem, newItem) {
 			if (oldItem == newItem) {
 				return this;
 			}
@@ -669,12 +678,12 @@
 			return this;
 		},
 
-		removeItem: function( item ) {
+		removeItem: function(item) {
 			var index = this.indexOf( item );
 			return index !== -1 ? this.removeAt( index ) : this;
 		},
 
-		removeItems: function( items ) {
+		removeItems: function(items) {
 			for (var i = 0; i < items.length; i++) {
 				this.removeItem( items[i] );
 			}
@@ -694,11 +703,11 @@
 		},
 
 		//fn is like function (index, item) { return item == 1; };
-		filter: function( fn ) {
+		filter: function(fn) {
 			return $( this.get() ).filter( fn ).get();
 		},
 
-		each: function( directAccess, fn ) {
+		each: function(directAccess, fn) {
 			if (!isBoolean( directAccess )) {
 				fn = directAccess;
 				directAccess = false;
@@ -736,24 +745,24 @@
 			return this;
 		},
 
-		map: function( fn ) {
+		map: function(fn) {
 			return $.map( this.get(), fn );
 		},
 
-		sort: function( by, asc ) {
+		sort: function(by, asc) {
 			return trigger( this.path, this.path, "afterUpdate", this.get().sortObject( by, asc ) );
 		},
 		//#endregion
 
 		//-------model link method -----------
-		reference: function( /*targetPath1, targetPath2, ..*/ ) {
+		reference: function(/*targetPath1, targetPath2, ..*/) {
 			for (var i = 0; i < arguments.length; i++) {
 				reference( this.path, arguments[i] );
 			}
 			return this;
 		},
 
-		dereference: function( /*targetPath1, targetPath2, ..*/ ) {
+		dereference: function(/*targetPath1, targetPath2, ..*/) {
 			for (var i = 0; i < arguments.length; i++) {
 				dereference( this.path, arguments[i] );
 			}
@@ -763,7 +772,7 @@
 		//endregion
 
 		//-------other methods---------
-		isEmpty: function( subPath ) {
+		isEmpty: function(subPath) {
 			var value = this.get( subPath );
 			return !value ? true :
 				!isArray( value ) ? false :
@@ -774,11 +783,11 @@
 			return this.path.startsWith( shadowNamespace );
 		},
 
-		toJSON: function( subPath ) {
+		toJSON: function(subPath) {
 			return JSON.stringify( this.get( subPath ) );
 		},
 
-		compare: function( expression ) {
+		compare: function(expression) {
 			if (expression) {
 				expression = toTypedValue( expression );
 				if (isString( expression )) {
@@ -799,33 +808,33 @@
 			}
 		},
 
-		saveLocal: function( subPath ) {
+		saveLocal: function(subPath) {
 			util.local( this.getPath( subPath ), this.get() );
 			return this;
 		},
 
-		getLocal: function( subPath ) {
+		getLocal: function(subPath) {
 			return util.local( this.getPath( subPath ) );
 		},
 
-		restoreLocal: function( subPath ) {
+		restoreLocal: function(subPath) {
 			rootNode.set( this.getPath( subPath ), this.getLocal( subPath ) );
 			return this;
 		},
 
-		clearLocal: function( subPath ) {
+		clearLocal: function(subPath) {
 			util.local( this.getPath( subPath ), undefined );
 			return this;
 		}
 
 	};
 
-	function expandToHashes ( $0 ) {
+	function expandToHashes ($0) {
 		return $0 === "." ? "#" : //if it is "." convert to "#"
-			Array( $0.length + 2 ).join( "#" ); ////if it is "#" convert to "##"
+			new Array( $0.length + 2 ).join( "#" ); ////if it is "#" convert to "##"
 	}
 
-	var onAddOrUpdateHandlers = [function /*inferNodeDependencies*/ ( context, index, value ) {
+	var onAddOrUpdateHandlers = [function /*inferNodeDependencies*/ (context, index, value) {
 
 		//only try to parse function body
 		//if it is a parameter-less function
@@ -843,13 +852,13 @@
 		}
 	}];
 
-	function processNewNode ( contextPath, indexPath, modelValue ) {
+	function processNewNode (contextPath, indexPath, modelValue) {
 		for (var i = 0; i < onAddOrUpdateHandlers.length; i++) {
 			onAddOrUpdateHandlers[i]( contextPath, indexPath, modelValue );
 		}
 	}
 
-	function getMainPath ( shadowPath ) {
+	function getMainPath (shadowPath) {
 		if (shadowPath === shadowNamespace) {
 			return "";
 		}
@@ -857,17 +866,17 @@
 		return match ? convertShadowKeyToMainPath( match[1] ) : shadowPath;
 	}
 
-	function convertShadowKeyToMainPath ( key ) {
+	function convertShadowKeyToMainPath (key) {
 		return key.replace( rHash, reduceToDot );
 	}
 
-	function reduceToDot ( hashes ) {
+	function reduceToDot (hashes) {
 		return hashes == "#" ? "." : // if is # return .
-			Array( hashes.length ).join( "#" ); // if it is ## return #
+			new Array( hashes.length ).join( "#" ); // if it is ## return #
 	}
 
 	/* processCurrent is used internally, don't use it */
-	function traverseModel ( modelPath, modelValue, processCurrent ) {
+	function traverseModel (modelPath, modelValue, processCurrent) {
 		var contextPath,
 			indexPath,
 			indexOfLastDot = modelPath.lastIndexOf( "." );
@@ -902,7 +911,7 @@
 		}
 	}
 
-	function reference ( referencingPath, referencedPath ) {
+	function reference (referencingPath, referencedPath) {
 		referencedPath = toPhysicalPath( referencedPath );
 		var referencingPaths = referenceTable[referencedPath];
 		if (!referencingPaths) {
@@ -911,7 +920,7 @@
 		referencingPaths.pushUnique( referencingPath );
 	}
 
-	function dereference ( referencingPath, referencedPath ) {
+	function dereference (referencingPath, referencedPath) {
 		referencedPath = toPhysicalPath( referencedPath );
 		var referencingPaths = referenceTable[referencedPath];
 		referencingPaths.remove( referencingPath );
@@ -920,7 +929,7 @@
 		}
 	}
 
-	function inferDependencies ( functionBody ) {
+	function inferDependencies (functionBody) {
 		var memberMatch,
 			rtn = [];
 
@@ -930,19 +939,19 @@
 		return rtn;
 	}
 
-	function contextOfPath ( path ) {
+	function contextOfPath (path) {
 		var match = rParentKey.exec( path );
 		return match && match[1] || "";
 	}
 
-	function indexOfPath ( path ) {
+	function indexOfPath (path) {
 		var match = rIndex.exec( path );
 		return match[1] || match[0];
 	}
 
 	var dummy = {};
 
-	var Class = function _ ( seed ) {
+	var Class = function _ (seed) {
 		var temp;
 
 		if (!(this instanceof _)) {
@@ -961,13 +970,13 @@
 	var superPrototype;
 	extend( Class.prototype, {
 
-		callProto: function( methodName ) {
+		callProto: function(methodName) {
 			var method = this.constructor.prototype[methodName];
 			return method.apply( this, slice.call( arguments, 1 ) );
 		},
 
 		//instance.callBase("method1", p1, p2,...);
-		callBase: function( methodName ) {
+		callBase: function(methodName) {
 			//superPrototype is global object, we use this
 			// because assume js in browser is a single threaded
 
@@ -995,7 +1004,7 @@
 		 },
 		 */
 		//the default initialize is to extend the instance with seed data
-		initialize: function( seed ) {
+		initialize: function(seed) {
 			extend( this, seed );
 		},
 
@@ -1019,7 +1028,7 @@
 		//if You have a subType called Person
 		//you can Person.list([ seed1, seed2 ]);
 		//to create an array of typed items
-		list: function( seeds ) {
+		list: function(seeds) {
 
 			var i,
 				seed,
@@ -1052,7 +1061,7 @@
 
 		//to create a new Type call
 
-		extend: function( instanceProperties, staticProperties ) {
+		extend: function(instanceProperties, staticProperties) {
 			var Child,
 				Parent = this;
 
@@ -1120,7 +1129,7 @@
 			// the the physical path is pointing to a shadow
 			// and the main model has been created
 			// and the shadow's parent is an object
-			toPhysicalPath: toPhysicalPath = function( logicalPath, createShadowIfNecessary /* internal use*/ ) {
+			toPhysicalPath: toPhysicalPath = function(logicalPath, createShadowIfNecessary /* internal use*/) {
 
 				var match, rtn = "", leftContext = "", mainValue, shadowKey, mainPath;
 
@@ -1189,7 +1198,7 @@
 					rtn ? rtn + "." + logicalPath :
 						logicalPath;
 			},
-			toLogicalPath: toLogicalPath = function( physicalPath ) {
+			toLogicalPath: toLogicalPath = function(physicalPath) {
 
 				var index, logicalPath, mainPath, match;
 
@@ -1218,8 +1227,8 @@
 			 * and  context is "a", it will be merged to "a.b" . If explicitly specify
 			 * convertSubPathToRelativePath to false, they will not be merged, so the "b" will be
 			 * returned as merge path*/
-			mergePath: mergePath = function( contextPath, subPath, convertSubPathToRelativePath
-			                                 /*used internally*/ ) {
+			mergePath: mergePath = function(contextPath, subPath, convertSubPathToRelativePath
+			                                /*used internally*/) {
 
 				if (subPath == "_" || contextPath == "_") {
 					return "_";
@@ -1277,22 +1286,22 @@
 				return contextPath + subPath;
 			},
 
-			isUndefined: isUndefined = function( obj ) {
+			isUndefined: isUndefined = function(obj) {
 				return (obj === undefined);
 			},
-			isPrimitive: isPrimitive = function( obj ) {
+			isPrimitive: isPrimitive = function(obj) {
 				return (obj === null ) || (typeof(obj) in primitiveTypes);
 			},
-			isString: isString = function( val ) {
+			isString: isString = function(val) {
 				return typeof val === "string";
 			},
-			isObject: isObject = function( val ) {
+			isObject: isObject = function(val) {
 				return $.type( val ) === "object";
 			},
-			isBoolean: isBoolean = function( object ) {
+			isBoolean: isBoolean = function(object) {
 				return typeof object === "boolean";
 			},
-			toTypedValue: toTypedValue = function( stringValue ) {
+			toTypedValue: toTypedValue = function(stringValue) {
 				if (isString( stringValue )) {
 					stringValue = $.trim( stringValue );
 					try {
@@ -1308,10 +1317,10 @@
 				}
 				return stringValue;
 			},
-			isPromise: isPromise = function( object ) {
+			isPromise: isPromise = function(object) {
 				return !!(object && object.promise && object.done && object.fail);
 			},
-			clearObj: clearObj = function( obj ) {
+			clearObj: clearObj = function(obj) {
 				if (isPrimitive( obj )) {
 					return null;
 				}
@@ -1322,14 +1331,14 @@
 				}
 				return obj;
 			},
-			clone: clone = function( original, deepClone ) {
+			clone: clone = function(original, deepClone) {
 				return isPrimitive( original ) ? original :
 					isArray( original ) ? original.slice( 0 ) :
 						isFunction( original ) ? original :
 							extend( !!deepClone, {}, original );
 			},
 
-			local: function( key, value ) {
+			local: function(key, value) {
 				if (arguments.length == 1) {
 					return JSON.parse( localStorage.getItem( key ) );
 				} else {
@@ -1341,11 +1350,11 @@
 				}
 			},
 
-			toString: function( value ) {
+			toString: function(value) {
 				return (value === null || value === undefined) ? "" : "" + value;
 			},
 
-			encodeHtml: function( str ) {
+			encodeHtml: function(str) {
 				var div = document.createElement( 'div' );
 				div.appendChild( document.createTextNode( str ) );
 				return div.innerHTML;
@@ -1356,7 +1365,7 @@
 		},
 
 		//this is used to process the new node added to repository
-		onAddOrUpdateNode: function( fn ) {
+		onAddOrUpdateNode: function(fn) {
 			if (fn) {
 				onAddOrUpdateHandlers.push( fn );
 				return this;
@@ -1365,7 +1374,7 @@
 			}
 		},
 
-		onDeleteNode: function( fn ) {
+		onDeleteNode: function(fn) {
 			if (fn) {
 				onDeleteHandlers.push( fn );
 				return this;
@@ -1379,7 +1388,7 @@
 	} );
 
 	var onDeleteHandlers = [
-		function /*removeModelLinksAndShadows*/ ( physicalPath, removedValue ) {
+		function /*removeModelLinksAndShadows*/ (physicalPath, removedValue) {
 
 			var watchedPath,
 				mainPath,
@@ -1415,7 +1424,7 @@
 		}
 	];
 
-	$( "get,set,del,extend".split( "," ) ).each( function( index, value ) {
+	$( "get,set,del,extend".split( "," ) ).each( function(index, value) {
 		hm[value] = function() {
 			return rootNode[value].apply( rootNode, slice.call( arguments ) );
 		};
@@ -1423,7 +1432,7 @@
 
 	rootNode = hm();
 
-	$fn.hmData = function( name, value ) {
+	$fn.hmData = function(name, value) {
 
 		var data = this.data( "hmData" );
 
@@ -3646,7 +3655,9 @@
 //
 
 
-	if (typeof Handlebars != "undefined") {
+	var Handlebars = window.Handlebars;
+
+	if (isUndefined( Handlebars )) {
 
 		hm.template.engineAdapter( "handlebars", {
 
@@ -3677,13 +3688,12 @@
 			return "ns:/" + options.data.renderContext.modelPath + "." + options.data.index + ";";
 		} );
 
-
 		//{{keyToNs}}
 		Handlebars.registerHelper( "keyToNs", function( options ) {
 			var renderContext = options.data.renderContext;
 
-			var rtn =  "ns:/" + renderContext.modelPath + ".table." +
-			       renderContext.e.publisher.itemKey( this );
+			var rtn = "ns:/" + renderContext.modelPath + ".table." +
+			          renderContext.e.publisher.itemKey( this );
 			return rtn;
 		} );
 
@@ -5509,16 +5519,16 @@
 
 
 
-	if (typeof matrix != "undefined") {
+	if (isUndefined( matrix )) {
 
-		template.load = function( templateId ) {
+		template.load = function(templateId) {
 			return matrix( templateId + ".template" );
 		};
 
 		matrix.loader.set( "template", {
 
 			load: {
-				compile: function( moduleId, sourceCode ) {
+				compile: function(moduleId, sourceCode) {
 
 					$( sourceCode ).filter( "script[id]" ).each( function() {
 
@@ -5533,7 +5543,7 @@
 				buildDependencies: "parseDependsTag"
 			},
 
-			url: function( templateId ) {
+			url: function(templateId) {
 				//first truncate the ".template" in the templateId, and get the real templateId
 				return template.templateIdToUrl( matrix.fileName( templateId ) );
 			}
@@ -5550,7 +5560,7 @@
 		//*a --> ~template/_/a.html
 		//*a.b --> ~template/_/a.html
 		//*a.b.c --> ~template/_/a.html
-		template.templateIdToUrl = function( templateId ) {
+		template.templateIdToUrl = function(templateId) {
 
 			var idSegments, folderName, fileName;
 
@@ -6814,7 +6824,7 @@
 			//it add additional logic beside the original load method
 			//such as instance counting, instance association with the container
 			//prepare to unload from the container
-			bootstrap: function( viewContainer, modelContainer, options ) {
+			bootstrap: function(viewContainer, modelContainer, options) {
 				if (!viewContainer || !this.loadable()) {
 					return;
 				}
@@ -6843,7 +6853,7 @@
 					instanceManager.add( viewContainer, modelContainer, appName, app );
 
 					//pass appName using namespace of event name to the event handler
-					$( viewContainer ).bind( "shutdown." + appName, function( e ) {
+					$( viewContainer ).bind( "shutdown." + appName, function(e) {
 						app.shutdown( this, e.namespace );
 						e.stopPropagation();
 					} );
@@ -6852,7 +6862,7 @@
 				}
 			},
 
-			shutdown: function( viewContainer, modelContainer ) {
+			shutdown: function(viewContainer, modelContainer) {
 
 				var appName = this.name;
 
@@ -6869,7 +6879,7 @@
 			//function( modelContainer, options ) {}
 			fetchRootData: null,
 
-			buildRootModel: function( modelContainer, options ) {
+			buildRootModel: function(modelContainer, options) {
 				var app = this;
 				if (!app.fetchRootData) {
 					throw "app.fetchRootData is not implemented";
@@ -6878,7 +6888,7 @@
 				var data = app.fetchRootData( modelContainer, options );
 
 				if (isPromise( data )) {
-					return data.done( function( data ) {
+					return data.done( function(data) {
 						hm.set( app.getNamespace( modelContainer ), data );
 					} );
 				} else {
@@ -6887,13 +6897,13 @@
 
 			},
 
-			destroyRootModel: function( modelContainer ) {
+			destroyRootModel: function(modelContainer) {
 				if (this.buildRootModel !== false) {
 					hm( modelContainer ).del( this.name );
 				}
 			},
 
-			buildRootView: function( viewContainer, modelContainer ) {
+			buildRootView: function(viewContainer, modelContainer) {
 
 				$( viewContainer ).renderContent(
 					this.getTemplateOptions(),
@@ -6901,7 +6911,7 @@
 
 			},
 
-			destroyRootView: function( viewContainer ) {
+			destroyRootView: function(viewContainer) {
 				$( viewContainer ).empty();
 			},
 
@@ -6910,11 +6920,11 @@
 
 			},
 
-			getNamespace: function( modelContainer ) {
+			getNamespace: function(modelContainer) {
 				return hm( modelContainer ).getPath( this.subPath || this.name );
 			},
 
-			initialize: function( seed ) {
+			initialize: function(seed) {
 
 				if (!seed.name) {
 					throw "An app must have a name.";
@@ -6948,20 +6958,20 @@
 			//  //if it is loadable: true , it means it is always loadable
 			//  loadable: function () {},
 			// });
-			add: function( app ) {
+			add: function(app) {
 				if (!(app instanceof this)) {
 					app = this( app );
 				}
 				appStore[app.name] = app;
 			},
 
-			remove: function( appName ) {
+			remove: function(appName) {
 				if (appStore[appName] && !appStore[appName].instanceCount) {
 					delete appStore[appName];
 				}
 			},
 
-			get: function( appName ) {
+			get: function(appName) {
 				return appStore[appName];
 			},
 
@@ -6975,7 +6985,7 @@
 			//container is jQuery object, or DOM element
 			//appName is string,
 			//options is optional
-			bootstrap: function( appName, viewContainer, modelContainer, options ) {
+			bootstrap: function(appName, viewContainer, modelContainer, options) {
 
 				if (arguments.length == 1) {
 
@@ -7018,7 +7028,7 @@
 			//container by default is document.body
 			//hm.App.shutdown(appName)
 			//hm.App.shutdown(container, appName);
-			shutdown: function( appName, viewContainer ) {
+			shutdown: function(appName, viewContainer) {
 				if (isUndefined( appName )) {
 					appName = viewContainer;
 					viewContainer = document.body;
@@ -7034,22 +7044,22 @@
 
 	var instanceManager = {
 
-		get: function( container, appName ) {
+		get: function(container, appName) {
 			return this.appData( container )[appName];
 		},
 
-		add: function( viewContainer, modelContainer, appName, app ) {
+		add: function(viewContainer, modelContainer, appName, app) {
 			this.appData( viewContainer )[appName] = {
 				app: app,
 				modelContainer: modelContainer
 			};
 		},
 
-		remove: function( container, appName ) {
+		remove: function(container, appName) {
 			delete this.appData( container )[appName];
 		},
 
-		appData: function( container, readOnly ) {
+		appData: function(container, readOnly) {
 			var appData = $( container ).hmData( "app" );
 			if (!readOnly && !appData) {
 				appData = { };
@@ -7061,7 +7071,7 @@
 
 	extend( hm.groups, {
 		//data-sub="app:/|gmail,options"
-		app: function( elem, path, subscriptions, options ) {
+		app: function(elem, path, subscriptions, options) {
 
 			var optionParts = rAppOptions.exec( $.trim( options ) ),
 				appName = optionParts[1],
@@ -7072,7 +7082,7 @@
 
 		//load an app when click
 		//data-sub="bootstrap:/|gmail,#containerId,options"
-		bootstrap: function( elem, path, subscripiptions, options ) {
+		bootstrap: function(elem, path, subscripiptions, options) {
 
 			var optionParts = rLoadAppOptions.exec( $.trim( options ) ),
 				appName = optionParts[1],
@@ -7086,7 +7096,7 @@
 
 		//unload an app when click
 		//data-sub="shutdown:_|gmail,#container"
-		shutdown: function( elem, path, subscripiptions, options ) {
+		shutdown: function(elem, path, subscripiptions, options) {
 
 			var optionParts = rLoadAppOptions.exec( $.trim( options ) ),
 				appName = optionParts[1],
@@ -7099,7 +7109,7 @@
 
 		//unload app from parent container
 		//data-sub="selfShutdown:_|gmail"
-		selfShutdown: function( elem, parseContext, subscriptions, options ) {
+		selfShutdown: function(elem, parseContext, subscriptions, options) {
 			$( elem ).mapEvent( "click", "shutdown." + options );
 		}
 
@@ -7107,7 +7117,7 @@
 
 	var _cleanDataForApp = $.cleanData;
 
-	$.cleanData = function( elems ) {
+	$.cleanData = function(elems) {
 		$( elems ).each( function() {
 			var appData = instanceManager.appData( this, true );
 			if (appData) {
@@ -7121,13 +7131,13 @@
 		_cleanDataForApp( elems );
 	};
 
-	if (typeof matrix !== "undefined") {
+	if (isUndefined( matrix )) {
 
 		matrix.loader.set( "app", "js", {
 			url: "folder"
 		} );
 
-		hm.App.fetch = function( appName ) {
+		hm.App.fetch = function(appName) {
 			return matrix( appName + ".app" );
 		};
 	}

@@ -10,7 +10,7 @@ p, textarea, .p * {
 
 .leftCol {
 	width: 220px;
-	position: fixed;
+	/*position: fixed;*/
 }
 
 .hd, .head {
@@ -19,7 +19,7 @@ p, textarea, .p * {
 }
 
 .fixedHead .head {
-	position: fixed;
+	/*position: fixed;*/
 	top: 0;
 	height: 100px;
 	z-index: 1000;
@@ -75,7 +75,7 @@ p, textarea, .p * {
 }
 
 .fixedHead .body {
-	margin-top: 110px;
+	/*margin-top: 110px;*/
 }
 
 a.selected {
@@ -121,7 +121,7 @@ table.layout > tbody > * > th {
 .tree {
 	max-height: 700px;
 	margin: 0 !important;
-	overflow-y: scroll;
+	/*overflow-y: scroll;*/
 }
 
 .treeOverflow {
