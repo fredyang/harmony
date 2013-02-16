@@ -3,9 +3,9 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Mon Feb 11 22:00:46 2013 -0500
+  * Date: Sat Feb 16 14:58:09 2013 -0500
   */
-(function($, window, undefined) {
+(function( $, window, undefined ) {
 	"use strict";
 
 	/*jshint smarttabs:true, evil:true, expr:true, newcap: false, validthis: true */
@@ -13,10 +13,10 @@
 	 * a wrapper over a Node constructor,
 	 * [value] is optional
 	 */
-	var hm = window.hm = function(path, value) {
+	var hm = window.hm = function( path, value ) {
 			return new Node( path, value );
 		},
-		Node = function(path, value) {
+		Node = function( path, value ) {
 			path = path || "";
 			this.path = toPhysicalPath( path, true /* create shadow if necessary */ );
 			if (!isUndefined( value )) {
@@ -106,7 +106,7 @@
 	//#end_debug
 
 
-	function augment (prototype, extension) {
+	function augment( prototype, extension ) {
 		for (var key in extension) {
 			if (!prototype[key]) {
 				prototype[key] = extension[key];
@@ -115,7 +115,7 @@
 	}
 
 	augment( arrayPrototype, {
-		indexOf: function(obj, start) {
+		indexOf: function( obj, start ) {
 			for (var i = (start || 0); i < this.length; i++) {
 				if (this[i] == obj) {
 					return i;
@@ -124,11 +124,11 @@
 			return -1;
 		},
 
-		contains: function(item) {
+		contains: function( item ) {
 			return (this.indexOf( item ) !== -1);
 		},
 
-		remove: function(item) {
+		remove: function( item ) {
 			var position = this.indexOf( item );
 			if (position != -1) {
 				this.splice( position, 1 );
@@ -136,19 +136,19 @@
 			return this;
 		},
 
-		removeAt: function(index) {
+		removeAt: function( index ) {
 			this.splice( index, 1 );
 			return this;
 		},
 
-		pushUnique: function(item) {
+		pushUnique: function( item ) {
 			if (!this.contains( item )) {
 				this.push( item );
 			}
 			return this;
 		},
 
-		merge: function(items) {
+		merge: function( items ) {
 			if (items && items.length) {
 				for (var i = 0; i < items.length; i++) {
 					this.pushUnique( items[i] );
@@ -158,7 +158,7 @@
 		},
 		//it can be sortObject()
 		//sortObject(by)
-		sortObject: function(by, asc) {
+		sortObject: function( by, asc ) {
 			if (isUndefined( asc )) {
 				if (isUndefined( by )) {
 					asc = true;
@@ -174,7 +174,7 @@
 			}
 
 			if (by) {
-				this.sort( function(a, b) {
+				this.sort( function( a, b ) {
 					var av = a[by];
 					var bv = b[by];
 					if (av == bv) {
@@ -191,25 +191,25 @@
 	} );
 
 	augment( stringPrototype, {
-		startsWith: function(text) {
+		startsWith: function( text ) {
 			return this.indexOf( text ) === 0;
 		},
-		contains: function(text) {
+		contains: function( text ) {
 			return this.indexOf( text ) !== -1;
 		},
-		endsWith: function(suffix) {
+		endsWith: function( suffix ) {
 			return this.indexOf( suffix, this.length - suffix.length ) !== -1;
 		},
-		supplant: function(obj) {
+		supplant: function( obj ) {
 			return this.replace( rSupplant,
-				function(a, b) {
+				function( a, b ) {
 					var r = obj[b];
 					return typeof r ? r : a;
 				} );
 		},
 		format: function() {
 			var source = this;
-			$.each( arguments, function(index, value) {
+			$.each( arguments, function( index, value ) {
 				source = source.replace( new RegExp( "\\{" + index + "\\}", "g" ), value );
 			} );
 			return source;
@@ -220,6 +220,10 @@
 
 		constructor: Node,
 
+		toString: function() {
+			return this.path;
+		},
+
 		//get()
 		//get(true)
 		//
@@ -229,7 +233,7 @@
 		//
 		//does not support the following, as will be implemented as get((subPath = p1), p2)
 		//get(p1, p2)
-		get: function(subPath /*, p1, p2, .. for parameters of model functions*/) {
+		get: function( subPath /*, p1, p2, .. for parameters of model functions*/ ) {
 
 			var currentValue, accessor = this.accessor( subPath, true );
 
@@ -264,7 +268,7 @@
 			return JSON.stringify( this.get.apply( this, slice.call( arguments ) ) );
 		},
 
-		raw: function(subPath, value) {
+		raw: function( subPath, value ) {
 			var accessor;
 			if (isFunction( subPath )) {
 				value = subPath;
@@ -291,7 +295,7 @@
 		//the function context is bound to current proxy's parent
 		//what is different for get function is that, set will return a proxy
 		//and get will return the result of the function
-		set: function(force, subPath, value) {
+		set: function( force, subPath, value ) {
 			//allow set(path, undefined)
 			if (arguments.length == 1) {
 				if (this.path === "") {
@@ -331,7 +335,7 @@
 			}
 		},
 
-		accessor: function(subPath, readOnly /*internal use only*/) {
+		accessor: function( subPath, readOnly /*internal use only*/ ) {
 			//if it is not readOnly, and access out of boundary, it will throw exception
 			if (subPath === 0) {
 				subPath = "0";
@@ -382,7 +386,7 @@
 			};
 		},
 
-		create: function(force, subPath, value, accessor /* accessor is used internally */) {
+		create: function( force, subPath, value, accessor /* accessor is used internally */ ) {
 
 			if (!isBoolean( force )) {
 				accessor = value;
@@ -433,7 +437,7 @@
 			return this;
 		},
 
-		extend: function(subPath, object) {
+		extend: function( subPath, object ) {
 			var newModel;
 			if (!object) {
 				object = subPath;
@@ -452,7 +456,7 @@
 		//update(subPath, value)
 		//most of the time force is not used, by default is it is false
 		//by in case you want to bypass validation you can explicitly set to true
-		update: function(force, subPath, value, accessor) {
+		update: function( force, subPath, value, accessor ) {
 
 			if (arguments.length == 1) {
 				if (this.path === "") {
@@ -504,7 +508,7 @@
 			return this;
 		},
 
-		del: function(subPath) {
+		del: function( subPath ) {
 			if (isUndefined( subPath )) {
 				if (this.path) {
 					return rootNode.del( this.path );
@@ -540,7 +544,7 @@
 			return removedValue;
 		},
 
-		createIfUndefined: function(subPath, value) {
+		createIfUndefined: function( subPath, value ) {
 			if (isUndefined( value )) {
 				throw "missing value argument";
 			}
@@ -551,12 +555,12 @@
 		},
 
 		//navigation methods
-		pushStack: function(newNode) {
+		pushStack: function( newNode ) {
 			newNode.previous = this;
 			return newNode;
 		},
 
-		cd: function(relativePath) {
+		cd: function( relativePath ) {
 			return this.pushStack( hm( this.getPath( relativePath ) ) );
 		},
 
@@ -568,7 +572,7 @@
 			return this.cd( "*" );
 		},
 
-		sibling: function(path) {
+		sibling: function( path ) {
 			return this.cd( ".." + path );
 		},
 
@@ -578,18 +582,18 @@
 		},
 
 		//--------------path methods---------------
-		getPath: function(subPath) {
+		getPath: function( subPath ) {
 			//join the context and subPath together, but it is still a logical path
 			return mergePath( this.path, subPath );
 		},
 
 		//to get the logicalPath of current model, leave subPath empty
-		logicalPath: function(subPath) {
+		logicalPath: function( subPath ) {
 			return toLogicalPath( this.getPath( subPath ) );
 		},
 
 		//to get the physicalPath of current model, leave subPath empty
-		physicalPath: function(subPath) {
+		physicalPath: function( subPath ) {
 			return toPhysicalPath( this.getPath( subPath ) );
 		},
 
@@ -602,7 +606,7 @@
 		},
 
 		//call the native method of the wrapped value
-		invoke: function(methodName /*, p1, p2, ...*/) {
+		invoke: function( methodName /*, p1, p2, ...*/ ) {
 			if (arguments.length === 0) {
 				throw "methodName is missing";
 			}
@@ -612,15 +616,15 @@
 		},
 
 		//region array methods
-		indexOf: function(item) {
+		indexOf: function( item ) {
 			return this.get().indexOf( item );
 		},
 
-		contains: function(item) {
+		contains: function( item ) {
 			return (this.indexOf( item ) !== -1);
 		},
 
-		first: function(fn) {
+		first: function( fn ) {
 			return fn ? this.filter( fn )[0] : this.get( "0" );
 		},
 
@@ -629,18 +633,18 @@
 			return value[value.length - 1];
 		},
 
-		push: function(item) {
+		push: function( item ) {
 			return this.create( this.get().length, item );
 		},
 
-		pushRange: function(items) {
+		pushRange: function( items ) {
 			for (var i = 0; i < items.length; i++) {
 				this.push( items[i] );
 			}
 			return this;
 		},
 
-		pushUnique: function(item) {
+		pushUnique: function( item ) {
 			return !this.contains( item ) ?
 				this.push( item ) :
 				this;
@@ -654,23 +658,23 @@
 			return this.del( 0 );
 		},
 
-		unshift: function(item) {
+		unshift: function( item ) {
 			return this.create( 0, item );
 		},
 
-		insertAt: function(index, item) {
+		insertAt: function( index, item ) {
 			return this.create( index, item );
 		},
 
-		updateAt: function(index, item) {
+		updateAt: function( index, item ) {
 			return this.update( index, item );
 		},
 
-		removeAt: function(index) {
+		removeAt: function( index ) {
 			return this.del( index );
 		},
 
-		move: function(fromIndex, toIndex) {
+		move: function( fromIndex, toIndex ) {
 			var count = this.count();
 
 			if (fromIndex !== toIndex &&
@@ -684,7 +688,7 @@
 			return this;
 		},
 
-		replaceItem: function(oldItem, newItem) {
+		replaceItem: function( oldItem, newItem ) {
 			if (oldItem == newItem) {
 				return this;
 			}
@@ -697,12 +701,12 @@
 			return this;
 		},
 
-		removeItem: function(item) {
+		removeItem: function( item ) {
 			var index = this.indexOf( item );
 			return index !== -1 ? this.removeAt( index ) : this;
 		},
 
-		removeItems: function(items) {
+		removeItems: function( items ) {
 			for (var i = 0; i < items.length; i++) {
 				this.removeItem( items[i] );
 			}
@@ -722,11 +726,11 @@
 		},
 
 		//fn is like function (index, item) { return item == 1; };
-		filter: function(fn) {
+		filter: function( fn ) {
 			return $( this.get() ).filter( fn ).get();
 		},
 
-		each: function(directAccess, fn) {
+		each: function( directAccess, fn ) {
 			if (!isBoolean( directAccess )) {
 				fn = directAccess;
 				directAccess = false;
@@ -764,24 +768,24 @@
 			return this;
 		},
 
-		map: function(fn) {
+		map: function( fn ) {
 			return $.map( this.get(), fn );
 		},
 
-		sort: function(by, asc) {
+		sort: function( by, asc ) {
 			return trigger( this.path, this.path, "afterUpdate", this.get().sortObject( by, asc ) );
 		},
 		//#endregion
 
 		//-------model link method -----------
-		reference: function(/*targetPath1, targetPath2, ..*/) {
+		reference: function( /*targetPath1, targetPath2, ..*/ ) {
 			for (var i = 0; i < arguments.length; i++) {
 				reference( this.path, arguments[i] );
 			}
 			return this;
 		},
 
-		dereference: function(/*targetPath1, targetPath2, ..*/) {
+		dereference: function( /*targetPath1, targetPath2, ..*/ ) {
 			for (var i = 0; i < arguments.length; i++) {
 				dereference( this.path, arguments[i] );
 			}
@@ -791,7 +795,7 @@
 		//endregion
 
 		//-------other methods---------
-		isEmpty: function(subPath) {
+		isEmpty: function( subPath ) {
 			var value = this.get( subPath );
 			return !value ? true :
 				!isArray( value ) ? false :
@@ -802,11 +806,11 @@
 			return this.path.startsWith( shadowNamespace );
 		},
 
-		toJSON: function(subPath) {
+		toJSON: function( subPath ) {
 			return JSON.stringify( this.get( subPath ) );
 		},
 
-		compare: function(expression) {
+		compare: function( expression ) {
 			if (expression) {
 				expression = toTypedValue( expression );
 				if (isString( expression )) {
@@ -827,33 +831,33 @@
 			}
 		},
 
-		saveLocal: function(subPath) {
+		saveLocal: function( subPath ) {
 			util.local( this.getPath( subPath ), this.get() );
 			return this;
 		},
 
-		getLocal: function(subPath) {
+		getLocal: function( subPath ) {
 			return util.local( this.getPath( subPath ) );
 		},
 
-		restoreLocal: function(subPath) {
+		restoreLocal: function( subPath ) {
 			rootNode.set( this.getPath( subPath ), this.getLocal( subPath ) );
 			return this;
 		},
 
-		clearLocal: function(subPath) {
+		clearLocal: function( subPath ) {
 			util.local( this.getPath( subPath ), undefined );
 			return this;
 		}
 
 	};
 
-	function expandToHashes ($0) {
+	function expandToHashes( $0 ) {
 		return $0 === "." ? "#" : //if it is "." convert to "#"
 			new Array( $0.length + 2 ).join( "#" ); ////if it is "#" convert to "##"
 	}
 
-	var onAddOrUpdateHandlers = [function /*inferNodeDependencies*/ (context, index, value) {
+	var onAddOrUpdateHandlers = [function /*inferNodeDependencies*/ ( context, index, value ) {
 
 		//only try to parse function body
 		//if it is a parameter-less function
@@ -871,13 +875,13 @@
 		}
 	}];
 
-	function processNewNode (contextPath, indexPath, modelValue) {
+	function processNewNode( contextPath, indexPath, modelValue ) {
 		for (var i = 0; i < onAddOrUpdateHandlers.length; i++) {
 			onAddOrUpdateHandlers[i]( contextPath, indexPath, modelValue );
 		}
 	}
 
-	function getMainPath (shadowPath) {
+	function getMainPath( shadowPath ) {
 		if (shadowPath === shadowNamespace) {
 			return "";
 		}
@@ -885,17 +889,17 @@
 		return match ? convertShadowKeyToMainPath( match[1] ) : shadowPath;
 	}
 
-	function convertShadowKeyToMainPath (key) {
+	function convertShadowKeyToMainPath( key ) {
 		return key.replace( rHash, reduceToDot );
 	}
 
-	function reduceToDot (hashes) {
+	function reduceToDot( hashes ) {
 		return hashes == "#" ? "." : // if is # return .
 			new Array( hashes.length ).join( "#" ); // if it is ## return #
 	}
 
 	/* processCurrent is used internally, don't use it */
-	function traverseModel (modelPath, modelValue, processCurrent) {
+	function traverseModel( modelPath, modelValue, processCurrent ) {
 		var contextPath,
 			indexPath,
 			indexOfLastDot = modelPath.lastIndexOf( "." );
@@ -930,7 +934,7 @@
 		}
 	}
 
-	function reference (referencingPath, referencedPath) {
+	function reference( referencingPath, referencedPath ) {
 		referencedPath = toPhysicalPath( referencedPath );
 		var referencingPaths = referenceTable[referencedPath];
 		if (!referencingPaths) {
@@ -939,7 +943,7 @@
 		referencingPaths.pushUnique( referencingPath );
 	}
 
-	function dereference (referencingPath, referencedPath) {
+	function dereference( referencingPath, referencedPath ) {
 		referencedPath = toPhysicalPath( referencedPath );
 		var referencingPaths = referenceTable[referencedPath];
 		referencingPaths.remove( referencingPath );
@@ -948,7 +952,7 @@
 		}
 	}
 
-	function inferDependencies (functionBody) {
+	function inferDependencies( functionBody ) {
 		var memberMatch,
 			rtn = [];
 
@@ -958,19 +962,19 @@
 		return rtn;
 	}
 
-	function contextOfPath (path) {
+	function contextOfPath( path ) {
 		var match = rParentKey.exec( path );
 		return match && match[1] || "";
 	}
 
-	function indexOfPath (path) {
+	function indexOfPath( path ) {
 		var match = rIndex.exec( path );
 		return match[1] || match[0];
 	}
 
 	var dummy = {};
 
-	var Class = function _ (seed) {
+	var Class = function _( seed ) {
 		var temp;
 
 		if (!(this instanceof _)) {
@@ -989,13 +993,13 @@
 	var superPrototype;
 	extend( Class.prototype, {
 
-		callProto: function(methodName) {
+		callProto: function( methodName ) {
 			var method = this.constructor.prototype[methodName];
 			return method.apply( this, slice.call( arguments, 1 ) );
 		},
 
 		//instance.callBase("method1", p1, p2,...);
-		callBase: function(methodName) {
+		callBase: function( methodName ) {
 			//superPrototype is global object, we use this
 			// because assume js in browser is a single threaded
 
@@ -1023,7 +1027,7 @@
 		 },
 		 */
 		//the default initialize is to extend the instance with seed data
-		initialize: function(seed) {
+		initialize: function( seed ) {
 			extend( this, seed );
 		},
 
@@ -1047,7 +1051,7 @@
 		//if You have a subType called Person
 		//you can Person.list([ seed1, seed2 ]);
 		//to create an array of typed items
-		list: function(seeds) {
+		list: function( seeds ) {
 
 			var i,
 				seed,
@@ -1080,7 +1084,7 @@
 
 		//to create a new Type call
 
-		extend: function(instanceProperties, staticProperties) {
+		extend: function( instanceProperties, staticProperties ) {
 			var Child,
 				Parent = this;
 
@@ -1090,7 +1094,7 @@
 			if (instanceProperties && instanceProperties.hasOwnProperty( "constructor" )) {
 				Child = instanceProperties.constructor;
 			} else {
-				Child = function _ () {
+				Child = function _() {
 					var temp;
 
 					if (!(this instanceof _)) {
@@ -1148,7 +1152,7 @@
 			// the the physical path is pointing to a shadow
 			// and the main model has been created
 			// and the shadow's parent is an object
-			toPhysicalPath: toPhysicalPath = function(logicalPath, createShadowIfNecessary /* internal use*/) {
+			toPhysicalPath: toPhysicalPath = function( logicalPath, createShadowIfNecessary /* internal use*/ ) {
 
 				var match, rtn = "", leftContext = "", mainValue, shadowKey, mainPath;
 
@@ -1217,7 +1221,7 @@
 					rtn ? rtn + "." + logicalPath :
 						logicalPath;
 			},
-			toLogicalPath: toLogicalPath = function(physicalPath) {
+			toLogicalPath: toLogicalPath = function( physicalPath ) {
 
 				var index, logicalPath, mainPath, match;
 
@@ -1246,11 +1250,22 @@
 			 * and  context is "a", it will be merged to "a.b" . If explicitly specify
 			 * convertSubPathToRelativePath to false, they will not be merged, so the "b" will be
 			 * returned as merge path*/
-			mergePath: mergePath = function(contextPath, subPath, convertSubPathToRelativePath
-			                                /*used internally*/) {
+			mergePath: mergePath = function( contextPath, subPath, convertSubPathToRelativePath
+			                                 /*used internally*/ ) {
+				if (subPath == "_") {
 
-				if (subPath == "_" || contextPath == "_") {
 					return "_";
+
+				} else if (contextPath == "_") {
+
+					if (subPath && subPath.startsWith( "/" )) {
+
+						contextPath = "";
+
+					} else {
+
+						return "_";
+					}
 				}
 
 				contextPath = toPhysicalPath( contextPath );
@@ -1305,22 +1320,22 @@
 				return contextPath + subPath;
 			},
 
-			isUndefined: isUndefined = function(obj) {
+			isUndefined: isUndefined = function( obj ) {
 				return (obj === undefined);
 			},
-			isPrimitive: isPrimitive = function(obj) {
+			isPrimitive: isPrimitive = function( obj ) {
 				return (obj === null ) || (typeof(obj) in primitiveTypes);
 			},
-			isString: isString = function(val) {
+			isString: isString = function( val ) {
 				return typeof val === "string";
 			},
-			isObject: isObject = function(val) {
+			isObject: isObject = function( val ) {
 				return $.type( val ) === "object";
 			},
-			isBoolean: isBoolean = function(object) {
+			isBoolean: isBoolean = function( object ) {
 				return typeof object === "boolean";
 			},
-			toTypedValue: toTypedValue = function(stringValue) {
+			toTypedValue: toTypedValue = function( stringValue ) {
 				if (isString( stringValue )) {
 					stringValue = $.trim( stringValue );
 					try {
@@ -1336,10 +1351,10 @@
 				}
 				return stringValue;
 			},
-			isPromise: isPromise = function(object) {
+			isPromise: isPromise = function( object ) {
 				return !!(object && object.promise && object.done && object.fail);
 			},
-			clearObj: clearObj = function(obj) {
+			clearObj: clearObj = function( obj ) {
 				if (isPrimitive( obj )) {
 					return null;
 				}
@@ -1350,14 +1365,14 @@
 				}
 				return obj;
 			},
-			clone: clone = function(original, deepClone) {
+			clone: clone = function( original, deepClone ) {
 				return isPrimitive( original ) ? original :
 					isArray( original ) ? original.slice( 0 ) :
 						isFunction( original ) ? original :
 							extend( !!deepClone, {}, original );
 			},
 
-			local: function(key, value) {
+			local: function( key, value ) {
 				if (arguments.length == 1) {
 					return JSON.parse( localStorage.getItem( key ) );
 				} else {
@@ -1369,11 +1384,11 @@
 				}
 			},
 
-			toString: function(value) {
+			toString: function( value ) {
 				return (value === null || value === undefined) ? "" : "" + value;
 			},
 
-			encodeHtml: function(str) {
+			encodeHtml: function( str ) {
 				var div = document.createElement( 'div' );
 				div.appendChild( document.createTextNode( str ) );
 				return div.innerHTML;
@@ -1384,7 +1399,7 @@
 		},
 
 		//this is used to process the new node added to repository
-		onAddOrUpdateNode: function(fn) {
+		onAddOrUpdateNode: function( fn ) {
 			if (fn) {
 				onAddOrUpdateHandlers.push( fn );
 				return this;
@@ -1393,7 +1408,7 @@
 			}
 		},
 
-		onDeleteNode: function(fn) {
+		onDeleteNode: function( fn ) {
 			if (fn) {
 				onDeleteHandlers.push( fn );
 				return this;
@@ -1407,7 +1422,7 @@
 	} );
 
 	var onDeleteHandlers = [
-		function /*removeModelLinksAndShadows*/ (physicalPath, removedValue) {
+		function /*removeModelLinksAndShadows*/ ( physicalPath, removedValue ) {
 
 			var watchedPath,
 				mainPath,
@@ -1443,7 +1458,7 @@
 		}
 	];
 
-	$( "get,set,del,extend".split( "," ) ).each( function(index, value) {
+	$( "get,set,del,extend".split( "," ) ).each( function( index, value ) {
 		hm[value] = function() {
 			return rootNode[value].apply( rootNode, slice.call( arguments ) );
 		};
@@ -1451,7 +1466,7 @@
 
 	rootNode = hm();
 
-	$fn.hmData = function(name, value) {
+	$fn.hmData = function( name, value ) {
 
 		var data = this.data( "hmData" );
 
@@ -1485,9 +1500,42 @@
 
 	 ,*/
 
+	//#debug
+
+	hm.debug.referencingPaths = function me( referencedPath, deep ) {
+		var rtn = referenceTable[referencedPath] || [];
+		if (deep) {
+			for (var i = 0; i < rtn.length; i++) {
+				rtn.merge( me( rtn[i], deep ) );
+			}
+		}
+		return rtn;
+	};
+
+	hm.debug.referencedPath = function( referencingPath ) {
+		var key, links, rtn = [];
+		for (key in referenceTable) {
+			links = referenceTable[key];
+			if (links.contains( referencingPath )) {
+				rtn.push( key );
+			}
+		}
+		return rtn;
+	};
+
+	hm.debug.shadowNamespace = shadowNamespace;
+	hm.debug.inferDependencies = inferDependencies;
+	hm.debug.removeAll = function() {
+		for (var key in repository) {
+			if (key !== shadowNamespace) {
+				rootNode.del( key, true );
+			}
+		}
+	};
+	//#end_debug
 
 
-//<@depends>repository.js</@depends>
+//<@depends>model.js</@depends>
 
 
 
@@ -1504,15 +1552,15 @@
 	// "get set convert finalize initialize"
 		activityTypes = "get,set,convert,finalize,initialize".split( "," );
 
-	function returnFalse () {
+	function returnFalse() {
 		return false;
 	}
 
-	function returnTrue () {
+	function returnTrue() {
 		return true;
 	}
 
-	function Event ( publisher, originalPublisher, eventType, proposed, removed ) {
+	function Event( publisher, originalPublisher, eventType, proposed, removed ) {
 		this.publisher = tryWrapPublisherSubscriber( publisher );
 		this.originalPublisher = tryWrapPublisherSubscriber( originalPublisher );
 		this.type = eventType;
@@ -1602,7 +1650,7 @@
 		var subscriptionStore = [ ];
 
 		//target is either publisher or subscriber
-		function canRemoveSubscriptionData ( target, publisher, subscriber ) {
+		function canRemoveSubscriptionData( target, publisher, subscriber ) {
 			if (target === publisher || target === subscriber) {
 				return true;
 			} else {
@@ -1617,7 +1665,7 @@
 
 		}
 
-		function getSubscriptionsBy ( target, match ) {
+		function getSubscriptionsBy( target, match ) {
 			if (isString( target )) {
 				target = toPhysicalPath( target );
 			}
@@ -1652,7 +1700,7 @@
 
 			//object can be a model path or dom element, or object
 			getBy: function( subscriberOrPublisher ) {
-				return getSubscriptionsBy( subscriberOrPublisher, function match ( item, target ) {
+				return getSubscriptionsBy( subscriberOrPublisher, function match( item, target ) {
 					return item.subscriber == target || item.publisher == target;
 				} );
 			},
@@ -1732,7 +1780,7 @@
 		};
 	})();
 
-	function getMember ( e ) {
+	function getMember( e ) {
 
 		var workflowInstance = e.workflow,
 			propertyName = workflowInstance.getName,
@@ -1745,7 +1793,7 @@
 				publisher[propertyName];
 	}
 
-	function setMember ( value, e ) {
+	function setMember( value, e ) {
 		var workflowInstance = e.workflow,
 			propertyName = workflowInstance.setName,
 		//setSubProperty is used for properties like css, attr, prop
@@ -1771,7 +1819,8 @@
 		//or it can be "*commonHandler"
 		//or it can be { get:xx, set:xx, convert:xx, initialize: xx}
 		//it can be a javascript object, dom element, but it can not be a jQuery object
-		//subscriber can be null, "_", "null" to represent a case where there is not subscriber
+		//subscriber can be null, "_", "null", undefined to represent a case where there is not subscriber
+		//if subscriber is "", it means the the root model, the repository object
 		sub: function( subscriber, publisher, eventTypes, workflow, workflowOptions, delegateSelector ) {
 
 			if (subscriber instanceof hm) {
@@ -1821,7 +1870,7 @@
 
 			//allow subscriber "", because this is the path of root model
 			if (subscriber === "_" || subscriber == "null" || subscriber === null) {
-				subscriber = dummy;
+				subscriber = undefined;
 			}
 
 			if (workflowOptions === "_") {
@@ -2001,7 +2050,7 @@
 	//input: getUniqueViewEventTypes("click dblClick", viewWithViewId3, viewWithViewId4)
 	//output: "click.__hm.3.4 dblClick.__hm.3.4"
 	//it try to append an event name with and ".__hm.viewId.subscriberId"
-	function buildUniqueViewEventTypes ( originalEventTypes, publisherView, subscriber ) {
+	function buildUniqueViewEventTypes( originalEventTypes, publisherView, subscriber ) {
 
 		var publisherViewId = viewIdManager.getId( publisherView );
 
@@ -2024,22 +2073,21 @@
 	//if object is model path, wrap it into model
 	//if it is pure object, return as it is
 	//if it is _, return null
-	function tryWrapPublisherSubscriber ( publisherOrSubscriber ) {
+	function tryWrapPublisherSubscriber( publisherOrSubscriber ) {
 		if (isString( publisherOrSubscriber )) {
 			return hm( publisherOrSubscriber );
 
-		} else if (publisherOrSubscriber == dummy) {
-			return null;
-		}
-		else if (isObject( publisherOrSubscriber ) && !publisherOrSubscriber.nodeType) {
+		} else if (isObject( publisherOrSubscriber ) && !publisherOrSubscriber.nodeType) {
 			//not a DOM element
 			return publisherOrSubscriber;
-		} else {
+
+		} else if (!isUndefined( publisherOrSubscriber )) {
+
 			return $( publisherOrSubscriber );
 		}
 	}
 
-	function replaceDotOrStar ( match ) {
+	function replaceDotOrStar( match ) {
 		//if match is ".", normalize it to "\\."
 		//if match is "*", normalize it to ".*"
 		return match == "." ? "\\." : ".*";
@@ -2047,7 +2095,7 @@
 
 	//if one of the subscribed events is matched with triggering event
 	//return that subscribed event
-	function getMatchedSubscribedEvent ( subscribedEvents, triggeringEvent ) {
+	function getMatchedSubscribedEvent( subscribedEvents, triggeringEvent ) {
 
 		var match,
 			source,
@@ -2105,7 +2153,7 @@
 	//check if subscription matched with the triggering event,
 	// and invoke its workflow, and also cascade the events to
 	//horizontally, e is mutable
-	function callbackModelSubscriptionHandler ( e ) {
+	function callbackModelSubscriptionHandler( e ) {
 
 		var subscription,
 			referencingNodes,
@@ -2160,7 +2208,7 @@
 		defaultOptions.debug = true;
 	}
 
-	function unwrapObject ( object ) {
+	function unwrapObject( object ) {
 		if (object) {
 			if (!isUndefined( object.path )) {
 				return hm.util.toLogicalPath( object.path );
@@ -2174,7 +2222,7 @@
 
 	//#end_debug
 
-	function executeWorkflowInstance ( subscriber, workflowInstance, e, triggerData ) {
+	function executeWorkflowInstance( subscriber, workflowInstance, e, triggerData ) {
 
 		//#debug
 		if (defaultOptions.debug) {
@@ -2243,14 +2291,14 @@
 
 	}
 
-	function setAndFinalize ( subscriber, workflowInstance, value, e ) {
+	function setAndFinalize( subscriber, workflowInstance, value, e ) {
 		if (!isUndefined( value )) {
 			workflowInstance.set && workflowInstance.set.call( subscriber, value, e );
 			workflowInstance.finalize && workflowInstance.finalize.call( subscriber, value, e );
 		}
 	}
 
-	function subscribeModelEvent ( publisherPath, eventTypes, subscriber, handler, options ) {
+	function subscribeModelEvent( publisherPath, eventTypes, subscriber, handler, options ) {
 
 		var match,
 			delayMiniSecond,
@@ -2292,7 +2340,7 @@
 	}
 
 	//subscribe jQuery event
-	function subscribeViewEvent ( viewPublisher, eventTypes, subscriber, handler, options, delegateSelector ) {
+	function subscribeViewEvent( viewPublisher, eventTypes, subscriber, handler, options, delegateSelector ) {
 
 		//get/set/convert/[init]/[options]
 		var needInit,
@@ -2348,7 +2396,7 @@
 	}
 
 	//the general jQuery event handler
-	function viewHandlerGateway ( e ) {
+	function viewHandlerGateway( e ) {
 
 		e.publisher = tryWrapPublisherSubscriber( e.currentTarget );
 		e.originalPublisher = tryWrapPublisherSubscriber( e.target );
@@ -2365,7 +2413,7 @@
 		}
 	}
 
-	function buildWorkflowInstance ( workflowPrototype, publisher, subscriber, initializeOptions ) {
+	function buildWorkflowInstance( workflowPrototype, publisher, subscriber, initializeOptions ) {
 
 		var workflowInstance;
 
@@ -2405,8 +2453,8 @@
 		return workflowInstance;
 	}
 
-	// workflowString is like "*workflowType" or "get set convert initialize finalize"
-	function buildWorkflowInstanceFromString ( workflowString, publisher, subscriber, initializeOptions ) {
+	// workflowString is like "*workflowType" or "get set convert finalize initialize"
+	function buildWorkflowInstanceFromString( workflowString, publisher, subscriber, initializeOptions ) {
 
 		//get set convert initialize finalize
 		var workflowInstance,
@@ -2477,7 +2525,7 @@
 	//the path should be a path prefix with "#"
 	//that path can be absolute path like "#/a.b"
 	//or it can be relative path relative to subscriber model or publisher model
-	function tryGetEmbeddedHandler ( path, publisher, subscriber ) {
+	function tryGetEmbeddedHandler( path, publisher, subscriber ) {
 
 		if (path.startsWith( "#" )) {
 
@@ -2491,7 +2539,7 @@
 		}
 	}
 
-	function initializeWorkflowInstance ( workflowInstance, publisher, subscriber, workflowOptions ) {
+	function initializeWorkflowInstance( workflowInstance, publisher, subscriber, workflowOptions ) {
 
 		var initialize = workflowInstance.initialize;
 
@@ -2520,7 +2568,7 @@
 		}
 	}
 
-	function inferWorkflowInstanceFromSingleActivity ( publisher, subscriber, activityName ) {
+	function inferWorkflowInstanceFromSingleActivity( publisher, subscriber, activityName ) {
 		//now workflowString does not startsWith *, it is not a workflow type
 		//infer handler from publisher and subscriber
 		//
@@ -2596,7 +2644,7 @@
 		return workflowInstance;
 	}
 
-	function buildWorkflowType ( workflowPrototype ) {
+	function buildWorkflowType( workflowPrototype ) {
 
 		var workflowInstance;
 
@@ -2631,7 +2679,7 @@
 		return workflowInstance;
 	}
 
-	function buildWorkflowTypeFromString ( workflowString ) {
+	function buildWorkflowTypeFromString( workflowString ) {
 
 		var workflowInstance,
 			activityName,
@@ -2657,12 +2705,12 @@
 		return workflowInstance;
 	}
 
-	function getActivitySet ( activityType ) {
+	function getActivitySet( activityType ) {
 		return hm.activity[activityType];
 	}
 
 	// publisher, subscriber is optional
-	function convertStringAccessorToFunction ( accessorType, workflowInstance, publisher, subscriber ) {
+	function convertStringAccessorToFunction( accessorType, workflowInstance, publisher, subscriber ) {
 
 		//by default workflow.get == "get", workflow.set = "set"
 		var accessorKey = workflowInstance[accessorType];
@@ -2703,7 +2751,7 @@
 		}
 	}
 
-	function ensureTargetHasAccessor ( accessorType, activityName, target ) {
+	function ensureTargetHasAccessor( accessorType, activityName, target ) {
 		var missingMember;
 		if (isString( target )) {
 
@@ -2729,7 +2777,7 @@
 	}
 
 	//activityType is like initialize, convert, finalize
-	function convertStringActivityToFunction ( workflowInstance, activityType ) {
+	function convertStringActivityToFunction( workflowInstance, activityType ) {
 		//because it is optional, we need make sure handler want to have this method
 		var activityName = workflowInstance[activityType];
 		if (isString( activityName )) {
@@ -2748,7 +2796,7 @@
 		}
 	}
 
-	function unsubscribe ( target ) {
+	function unsubscribe( target ) {
 		if (isObject( target )) {
 			if (!viewIdManager.getId( target )) {
 				return;
@@ -2811,7 +2859,7 @@
 			return subscriptionManager.getBySubscriber( this.path );
 		},
 
-		subscriptions: function() {
+		subs: function() {
 			return subscriptionManager.getBy( this.path );
 		},
 
@@ -2878,7 +2926,7 @@
 			return subscriptionManager.getBySubscriber( this[0] );
 		},
 
-		subscriptions: function() {
+		subs: function() {
 			return subscriptionManager.getBy( this[0] );
 		},
 
@@ -2966,10 +3014,19 @@
 	util.getUniqueViewEventTypes = buildUniqueViewEventTypes;
 	util._viewHandlerGateway = viewHandlerGateway;
 
+	//#debug
+	hm.debug.getMatchedSubscribedEvent = getMatchedSubscribedEvent;
+	hm.debug.buildWorkflowType = buildWorkflowType;
+	hm.debug.getMember = getMember;
+	hm.debug.setMember = setMember;
+	hm.debug.unsub = function( object ) {
+		unsubscribe( object );
+	};
+	//#end_debug
 
 
 //
-//<@depends>subscription.js, repository.js</@depends>
+//<@depends>subscription.js, model.js</@depends>
 
 
 	var rSubscriptionProperty = /([!$]?)([\w \+\-\*\.]+?):([\w\W]+?)\s*(?:[;]\s*|$)/g,
@@ -3300,7 +3357,7 @@
 
 //#debug
 //
-//<@depends>subscription.js, repository.js, declarative.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js</@depends>
 
 
 	Group.prototype.print = function() {
@@ -3378,7 +3435,7 @@
 	};
 
 //#end_debug//
-//<@depends>subscription.js, repository.js, declarative.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js</@depends>
 
 
 	var template,
@@ -3871,7 +3928,7 @@
 
 
 //
-//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js, template.js</@depends>
 
 
 	function getCheckableControlValue ( $elem ) {
@@ -4140,7 +4197,7 @@
 
 
 //
-//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js, template.js</@depends>
 
 
 	defaultOptions.confirmMessage = "Are you sure?";
@@ -4657,7 +4714,7 @@
 /*
  <@depends>
  subscription.js,
- repository.js
+ model.js
  </@depends>
  */
 
@@ -4877,7 +4934,7 @@
 	} );
 
 //
-//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js, template.js</@depends>
 
 
 	defaultOptions.errors = {
@@ -5654,7 +5711,7 @@
 	}
 
 //
-//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js, template.js</@depends>
 //
 
 
@@ -5724,7 +5781,7 @@
 
 	}
 
-//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js, template.js</@depends>
 
 
 	//the convention here is that ,
@@ -6116,7 +6173,7 @@
 /*
  <@depends>
  subscription.js,
- repository.js
+ model.js
  </@depends>
  */
 
@@ -6263,7 +6320,7 @@
 	};
 
 //
-//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js, template.js</@depends>
 
 
 	//augment jQuery Event type
@@ -6768,7 +6825,7 @@
 /*
  <@depends>
  subscription.js,
- repository.js,
+ model.js,
  declarative.js,
  template.js,
  https://raw.github.com/cowboy/jquery-bbq/v1.2.1/jquery.ba-bbq.js
@@ -6847,7 +6904,7 @@
 	}
 
 //
-//<@depends>subscription.js, repository.js, declarative.js, template.js</@depends>
+//<@depends>subscription.js, model.js, declarative.js, template.js</@depends>
 //
 
 

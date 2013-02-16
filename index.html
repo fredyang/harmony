@@ -51,7 +51,7 @@
 				<div class="bd">
 					<nav class="vlist">
 						<a href="index.html">Get started</a>
-						<a href="pages/Repository.html">Repository</a>
+						<a href="pages/Model.html">Model</a>
 						<a href="pages/Subscription.html">Unified Subscription</a>
 						<a href="pages/workflowActivity.html">Workflow/activity</a>
 						<a href="pages/template.html">Template</a>
@@ -67,8 +67,7 @@
 			<h2>Get started</h2>
 
 			<p>Harmony is a lightweight jQuery based library for building trivial widget or complex
-				html
-				application. It implements <a
+				html application. It gives control back to model and view, by implementing <a
 					href="http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern">publish-subscribe
 					pattern</a>, and provides an environment where model and view can live in
 				harmony. Here are some of its features.
@@ -183,15 +182,17 @@
 			<!--This publish-subscribe pattern provides us a loose coupling architecture, which can
 							be scaled to very complex UI environment. Because logic are evenly distributed
 							among objects here, the code complexity grow linearly to the application complexity.-->
-			<p>The core of Harmony is based on the following modules</p>
+			<p>The core of Harmony is based on the following modules.</p>
 			<ol>
-				<li>Repository</li>
+				<li>Model</li>
 				<li>Unified Subscription</li>
 				<li>Workflow/activity</li>
 				<li>Template</li>
 			</ol>
 
-			<p>
+			<p>Is the view module missing from the list? Yes, but it is deliberate. Most of the view
+				features are taken care by jQuery, Harmony just add a couple of methods to jQuery
+				object.
 				In the following, I will give a overview on how each modules works. For details of
 				each API, please refer to <a href="/harmony/pages/doc.html">documentation</a>.
 			</p>

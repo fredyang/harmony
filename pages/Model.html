@@ -51,7 +51,7 @@
 				<div class="bd">
 					<nav class="vlist">
 						<a href="../index.html">Get started</a>
-						<a href="Repository.html">Repository</a>
+						<a href="Model.html">Model</a>
 						<a href="Subscription.html">Unified Subscription</a>
 						<a href="workflowActivity.html">Workflow/activity</a>
 						<a href="template.html">Template</a>
@@ -61,13 +61,12 @@
 			</div>
 
 
-
 		</div>
 
 		<div class="main">
 
 
-			<h2>Repository</h2>
+			<h2>Model</h2>
 
 			<!--	<p>
 					To implement the publish-subscribe pattern, Harmony needs the support for event from
@@ -78,27 +77,23 @@
 					bubbling when model is manipulated.
 				</p>
 	-->
-			<p>Like DOM, repository is a tree-like structure, which holds all client-side data and
-				functions, which are called model. <strong>The primary reason to use repository is
-					model
-					event</strong>. When model inside repository is changed, model events can be
-				triggered.
-				Without model event, it is impossible to implement publisher subscriber pattern.</p>
 
-			<h3>Accessing model</h3>
+			<p>In Harmony, the models are public accessible data and functions. They are saved in a
+				singleton object called <strong>repository</strong>. Repository is a JSON object and
+				it is tree-like structure. Rather than accessing the model directly, we use a node
+				object to access them. <strong>The main reason for that is model event</strong>. When node
+				method is called to change the model, model events can be triggered. Without model
+				event, it is impossible to implement publisher subscriber pattern.
 
-			<p>
-				The model in side repository can be accessed through a model node, which is
-				associated with a path. We can use a model node to we can create, read, update,
-				delete data and invoke method in the repository.
+			</p>
 			</p>
 
 			<p>
-				In the following, I will use <a href="http://jsbin.com">JS Bin</a> to live demo all
-				sample codes, which are
-				fully executable. You can click on the link to the top right to see the code in
-				action. More than that, you can modify the code and see the change instantly.
-				The following is some sample on how to use node.
+				With a model node, We can create, read, update, delete data and invoke method in the
+				repository. In the following, I will use <a href="http://jsbin.com">JS Bin</a> to
+				live demo all sample codes, which are fully executable. You can click on the link to
+				the top right to see the code in action. More than that, you can modify the code and
+				see the change instantly. The following is some sample on how to use node.
 			</p>
 
 			<!--<p><a href="">JS Bin</a></p>-->
@@ -146,14 +141,11 @@ phones.push({type: "mobile", number: "111-1111"});
 			<h3>Model events</h3>
 
 			<p>
-				When model is changed via node, different model events will be triggered.
-
 				Model events can be propagated vertically from bottom to top in repository, this is
-				called event bubbling. For example when firstName change, event can bubble up to
-				person.
-
-				They can also be cascaded horizontally in repository, this is called
-				event cascading. For example, when firstName change, event can cascade to fullName.
+				called event propagation or event bubbling. For example when firstName change, event
+				can propagated up to person. They can also be cascaded horizontally in repository,
+				this is called event cascading. For example, when firstName change, event can
+				cascade to fullName.
 
 				The following example shows how what event will be triggered when firstName node is
 				changed, and the sequence in which they are triggered.
