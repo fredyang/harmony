@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title>Repository</title>
+	<script src="../ref/modernizr-2.6.2.min.js"></script>
+	<link href="doc.css" rel='stylesheet'/>
+
+</head>
+<body>
+<!--[if lt IE 7]>
+<p class="chrome">You are using an <strong>outdated</strong> browser. Please <a
+	href="http://browsehappy.com/">upgrade your browser</a> or <a
+	href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to
+	improve your experience.</p>
+<![endif]-->
+<div class="page fixedHead">
+	<div class="head  title">
+		<header>
+			<h1><a class="linkButton" href="../index.html">Harmony</a></h1>
+
+			<p>where model and view should live in</p>
+		</header>
+
+		<nav class="hlist">
+			<a href="../index.html" class="selected">Home</a>
+
+			<a href="doc.html">Documentation</a>
+			<a href="//github.com/fredyang/Harmony">Source on GitHub</a>
+			<div class="g-plusone" data-annotation="standard" data-width="300"></div>
+
+		</nav>
+
+	</div>
+
+
+	<div class="body">
+		<div class="leftCol">
+
+			<div class="mod  ">
+				<div class="hd">
+					Introduction
+				</div>
+
+				<div class="bd">
+					<nav class="vlist">
+						<a href="../index.html">Get started</a>
+						<a href="Model.html">Model</a>
+						<a href="Subscription.html">Unified Subscription</a>
+						<a href="workflowActivity.html">Workflow/activity</a>
+						<a href="template.html">Template</a>
+						<a href="examples.html">Examples</a>
+					</nav>
+				</div>
+			</div>
+
+
+		</div>
+
+		<div class="main">
+
+
+			<h2>Model</h2>
+
+			<!--	<p>
+					To implement the publish-subscribe pattern, Harmony needs the support for event from
+					both model and view. On the view side, DOM already support event natively, and
+					jQuery eases DOM manipulation and provides extensible event model across browser, so
+					Harmony reuse these greatness. On the model side, Harmony implements model
+					repository which encapsulate model access and support event triggering, event
+					bubbling when model is manipulated.
+				</p>
+	-->
+
+			<p>In Harmony, the models are public accessible data and functions. They are saved in a
+				singleton object called <strong>repository</strong>. Repository is a JSON object and
+				it is tree-like structure. Rather than accessing the model directly, we use a node
+				object to access them. <strong>The main reason for that is model event</strong>. When node
+				method is called to change the model, model events can be triggered. Without model
+				event, it is impossible to implement publisher subscriber pattern.
+
+			</p>
+			</p>
+
+			<p>
+				With a model node, We can create, read, update, delete data and invoke method in the
+				repository. In the following, I will use <a href="http://jsbin.com">JS Bin</a> to
+				live demo all sample codes, which are fully executable. You can click on the link to
+				the top right to see the code in action. More than that, you can modify the code and
+				see the change instantly. The following is some sample on how to use node.
+			</p>
+
+			<!--<p><a href="">JS Bin</a></p>-->
+
+<pre data-sub="prettyprint:_;preview:_|http://jsbin.com/odacij/4">
+//create a node pointing to root of repository
+var root = hm();
+root.set("customer", {
+ firstName: "John",
+ lastName: "Doe",
+ fullName: function () {
+  return this.get("firstName") + "," + this.get("lastName");
+ },
+ phones: [
+  { type: "home", number: "444-4444" },
+  { type: "office", number: "888-8888"}
+ ]
+});
+
+//get a subnode value
+hm.log(root.get("customer.firstName"));
+
+//traverse to subnode, and get its value
+hm.log(root.cd("customer.lastName").get());
+
+//get model property
+hm.log(root.cd("customer").get("fullName"));
+
+//create a new node at "customer.firstName"
+var firstName = root.cd("customer.firstName");
+  //update node value
+firstName.update("May");
+hm.log(firstName.get());
+
+//update child node, from the context node
+root.update("customer.lastName", "Wu");
+hm.log(root.get("customer.lastName"));
+hm.log(root.get("customer.fullName"));
+
+ //create a node at "customer.phones"
+var phones = hm("customer.phones");
+phones.push({type: "mobile", number: "111-1111"});
+</pre>
+
+			<h3>Model events</h3>
+
+			<p>
+				Model events can be propagated vertically from bottom to top in repository, this is
+				called event propagation or event bubbling. For example when firstName change, event
+				can propagated up to person. They can also be cascaded horizontally in repository,
+				this is called event cascading. For example, when firstName change, event can
+				cascade to fullName.
+
+				The following example shows how what event will be triggered when firstName node is
+				changed, and the sequence in which they are triggered.
+			</p>
+
+			<!--<p>When we use node to change model in the repository, model events will be
+				triggered. There are lots of built-in events raised in built-in node methods,
+				and we can create our own method and raise custom event. The following code shows
+				what events are triggered and how they bubble up to parent node and cascade to
+				dependent peers (derived property).
+			</p>-->
+
+
+<pre data-sub="prettyprint:_;preview:_|http://jsbin.com/epojap/1">
+
+function dump(e) {
+  var color = e.originalPublisher.path != e.publisher.path ?
+              "red" :
+              "green";
+  hm.log(e.originalPublisher.path + "--&gt;  " +
+         e.publisher.path, color);
+  hm.log("event type: " + e.type);
+  hm.log("");
+}
+
+var person = hm("person", {
+  firstName: "John",
+  lastName: "Doe",
+  fullName: function () {
+    return this.get("firstName") + "," + this.get("lastName");
+  }
+});
+
+hm.handle("person", "after*", dump);
+hm.handle("person.fullName", "afterUpdate", dump);
+hm.handle("person.firstName", "afterUpdate", dump);
+person.set("firstName", "May");
+</pre>
+		</div>
+
+	</div>
+	<div class="footer   title">
+		<p class="fR man">&copy; Fred Yang - <a href="http://semanticsworks.com">http://semanticsworks.com</a>
+		</p>
+	</div>
+</div>
+</div>
+<script src="../ref/jquery.js"></script>
+<script src="../ref/jsrender.js"></script>
+<script src="../ref/jquery.ba-bbq.min.js"></script>
+<script src="../download/harmony.debug.js"></script>
+<script src="../ref/matrix.min.js"></script>
+<script src="../assets/js/doc.js"></script>
+<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+
+
+</body>
+</html>

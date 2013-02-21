@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" xmlns="http://www.w3.org/1999/html"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title>Workflow/activity</title>
+	<script src="../ref/modernizr-2.6.2.min.js"></script>
+	<link href="doc.css" rel='stylesheet'/>
+
+</head>
+<body>
+<!--[if lt IE 7]>
+<p class="chrome">You are using an <strong>outdated</strong> browser. Please <a
+	href="http://browsehappy.com/">upgrade your browser</a> or <a
+	href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to
+	improve your experience.</p>
+<![endif]-->
+<div class="page fixedHead">
+	<div class="head  title">
+		<header>
+			<h1><a class="linkButton" href="../index.html">Harmony</a></h1>
+
+			<p>where model and view should live in</p>
+		</header>
+
+		<nav class="hlist">
+			<a href="../index.html" class="selected">Home</a>
+
+			<a href="doc.html">Documentation</a>
+			<a href="//github.com/fredyang/Harmony">Source on GitHub</a>
+			<div class="g-plusone" data-annotation="standard" data-width="300"></div>
+
+		</nav>
+
+	</div>
+
+	<div class="body">
+		<div class="leftCol">
+
+			<div class="mod  ">
+				<div class="hd">
+					Introduction
+				</div>
+
+				<div class="bd">
+					<nav class="vlist">
+						<a href="../index.html">Get started</a>
+						<a href="Model.html">Model</a>
+						<a href="Subscription.html">Unified Subscription</a>
+						<a href="workflowActivity.html">Workflow/activity</a>
+						<a href="template.html">Template</a>
+						<a href="examples.html">Examples</a>
+					</nav>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="main">
+
+			<h2>Workflow/activity</h2>
+
+			<p>In harmony, subscription handler are implemented as workflow. Event handler and
+				workflow are synonyms here, they can be used exchangeably. A workflow consists of
+				minimum 1 activity ("get") and max 5 activities ("initialize", "get",
+				"convert", "set", "finalize"). Each activity is a function, the "get" activity and
+				"convert" activity can be <a
+					href="/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Handler.Async+handler">asynchronous</a>
+				, as long as they return a jQuery promise. When Harmony executes a workflow, it
+				execute the functions in sequence and pass the result of previous function to next
+				one as input. <strong>The reason to use workflow and activity is to increase code
+					reusability and composability</strong>.
+			</p>
+
+			<p>
+				The de-composability of workflow into activities and composability of actvities to
+				workflow is based on following facts mentioned in <a
+				href="/harmony/pages/Subscription.html"> Unified Subscription.
+			</a>
+			</p>
+
+			<ol>
+				<li>Workflow is stateless, it has not knowledge of subscriber and publisher until it
+					is
+					executed.
+				</li>
+				<li>Workflow does very simple things, subscriber get some information from
+					publisher,
+					and make some change of himself.
+				</li>
+			</ol>
+
+			<p>
+
+				In <a href="/harmony/pages/Subscription.html">Unified Subscription</a>, we
+				have a <a href="http://jsbin.com/iqopeb/1">programmatic subscription example</a>, it
+				use several function handlers, which can be decomposed into the following
+				activities.
+			</p>
+
+<pre data-sub="prettyprint:_;preview:_|http://jsbin.com/ikuham/1">
+
+function (e) {
+ this.set(e.publisher.val());
+}
+//can be decomposed to to the the following
+{
+  get: "val",
+  set: "set"
+}
+//or shorter
+"val set";
+//or even shorter
+"val";
+
+function (e) {
+  this.set(e.publisher.val());
+}
+//can be decomposed to
+{
+   get: "get",
+   set: "val"
+}
+//or shorter
+"get val";
+//or even shorter
+"val";
+
+function (e) {
+ this.text(e.publisher.get());
+}
+//can be decomposed to
+{
+  get: "get",
+  set: "text"
+}
+//or shorter
+"get text",
+//or even shorter
+"text"
+</pre>
+			<p>
+				<strong>Composability</strong> is also heavily used in declarative subscriptions. In
+				the following, we create a <a
+				href="/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Handler.workflow+type">workflow
+				type</a> <code>slideDown</code>, and then create a <a
+				href="http://code.semanticsworks.com/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Declarative.Subscription+group">subscription
+				group</a> by composing two subscription, one composed by
+				<a href="/harmony/pages/doc.html#api.apiAction=view&api.selectedEntryName=Core.Unified+Subscription.Subscription.Handler.workflow+type">
+					workflow type</a> <code>show</code> which
+				is built-in with harmony, one composed by <code>slideDown</code> workflow type created
+				previously. And then we use create declarative subscription with the group and the
+				model <code>isVisible</code> like the following:
+			</p>
+
+<pre data-sub="prettyprint:_;preview:_|http://jsbin.com/uwudul/5">
+
+
+&lt;label&gt;&lt;input type="checkbox" data-sub="val:isVisible" /&gt;toggle visibility &lt;/label&gt;
+
+&lt;!--build declarative subscription to model "isVisible"
+using subscription group "show" --&gt;
+&lt;div class="showBox" data-sub="show:isVisible"&gt;
+   show or hide
+&lt;/div&gt;
+
+&lt;!-- build declarative subscription to model "isVisible"
+using subscription group "slideDown" --&gt;
+&lt;div class="slideBox" data-sub="slideDown:isVisible"&gt;
+ slide up or slide down
+&lt;/div&gt;
+</pre>
+
+<pre data-sub="prettyprint:_;">
+//create a model
+hm("isVisible", true);
+
+//create a workflow
+hm.workflowType( "slideDown", function( e ) {
+  this[e.publisher.get() ? "slideDown" : "slideUp"]();
+} );
+
+//create a subscription group
+hm.groups.slideDown =
+  //after model update try to apply workflow
+  //"slideDown" to the view
+  "!afterUpdate:.|*slideDown;" +
+  //initially apply model value to
+  //the workflow "show"
+  "!init:.|*show";
+</pre>
+
+
+		</div>
+
+	</div>
+	<div class="footer   title">
+		<p class="fR man">&copy; Fred Yang - <a href="http://semanticsworks.com">http://semanticsworks.com</a>
+		</p>
+	</div>
+</div>
+</div>
+<script src="../ref/jquery.js"></script>
+<script src="../ref/jsrender.js"></script>
+<script src="../ref/jquery.ba-bbq.min.js"></script>
+<script src="../download/harmony.debug.js"></script>
+<script src="../ref/matrix.min.js"></script>
+<script src="../assets/js/doc.js"></script>
+<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+
+
+
+</body>
+</html>
