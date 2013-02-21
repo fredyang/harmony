@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Sat Feb 16 14:58:09 2013 -0500
+  * Date: Thu Feb 21 12:49:37 2013 -0500
   */
 (function( $, window, undefined ) {
 	"use strict";
@@ -507,6 +507,8 @@
 				return false;
 			}
 
+			trigger( physicalPath, physicalPath, "duringDel", undefined, removedValue );
+
 			if (isHostObjectArray) {
 
 				hostObj.splice( accessor.index, 1 );
@@ -533,6 +535,15 @@
 			return ( accessor.index in accessor.hostObj ) ?
 				this :
 				this.create( subPath, value, accessor );
+		},
+
+		toggle: function( subPath ) {
+
+			var accessor = this.accessor( subPath );
+			if (accessor.index in accessor.hostObj) {
+				this.update( subPath, !accessor.hostObj[accessor.index], accessor );
+			}
+			return this;
 		},
 
 		//navigation methods
@@ -1913,7 +1924,9 @@
 					return e.originalPublisher.get();
 				},
 
-				skipGet: returnTrue
+				fakeGet: function() {
+					return dummy;
+				}
 			},
 
 			//workflowInstance.set.call( subscriber, value, e );
@@ -1921,7 +1934,7 @@
 			//set(value, e)
 			set: {
 				setMember: setMember,
-				skipSet: $.noop
+				fakeSet: $.noop
 
 			},
 
@@ -2212,6 +2225,9 @@
 
 	function setAndFinalize( subscriber, workflowInstance, value, e ) {
 		if (!isUndefined( value )) {
+			if (value === dummy) {
+				value = undefined;
+			}
 			workflowInstance.set && workflowInstance.set.call( subscriber, value, e );
 			workflowInstance.finalize && workflowInstance.finalize.call( subscriber, value, e );
 		}
@@ -2481,7 +2497,6 @@
 
 		if (initialize) {
 			initialize( tryWrapPublisherSubscriber( publisher ), tryWrapPublisherSubscriber( subscriber ), workflowInstance, workflowOptions );
-			delete workflowInstance.initialize;
 		} else if (!isUndefined( workflowOptions )) {
 			workflowInstance.options = workflowOptions;
 		}
@@ -2770,16 +2785,23 @@
 			return this;
 		},
 
-		subsToMe: function() {
-			return subscriptionManager.getByPublisher( this.path );
+		subsToMe: function( print ) {
+			var rtn = subscriptionManager.getByPublisher( this.path );
+
+			return rtn;
 		},
 
-		subsFromMe: function() {
-			return subscriptionManager.getBySubscriber( this.path );
+		subsFromMe: function( print ) {
+			var rtn = subscriptionManager.getBySubscriber( this.path );
+
+			return rtn;
 		},
 
-		subs: function() {
-			return subscriptionManager.getBy( this.path );
+		subs: function( print ) {
+			var rtn = subscriptionManager.getBy( this.path );
+
+
+			return rtn;
 		},
 
 		/*
@@ -2837,16 +2859,25 @@
 			return this;
 		},
 
-		subsToMe: function() {
-			return subscriptionManager.getByPublisher( this[0] );
+		subsToMe: function( print ) {
+			var rtn = subscriptionManager.getByPublisher( this[0] );
+
+
+			return rtn;
 		},
 
-		subsFromMe: function() {
-			return subscriptionManager.getBySubscriber( this[0] );
+		subsFromMe: function(print) {
+			var rtn = subscriptionManager.getBySubscriber( this[0] );
+
+
+			return rtn;
 		},
 
-		subs: function() {
-			return subscriptionManager.getBy( this[0] );
+		subs: function( print ) {
+			var rtn = subscriptionManager.getBy( this[0] );
+
+
+			return rtn;
 		},
 
 		initView: function( path, workflow, options ) {
@@ -2946,7 +2977,7 @@
 	defaultOptions.subsAttr = "data-sub";
 	defaultOptions.autoparseSub = true;
 
-	function mergeOptions ( parentOptions, localOptions ) {
+	function mergeOptions( parentOptions, localOptions ) {
 		if (localOptions !== "_") {
 			return  (localOptions && localOptions.startsWith( "_" )) ?
 				localOptions.substr( 1 ) :
@@ -2954,7 +2985,7 @@
 		}
 	}
 
-	function getInheritedNamespace ( elem ) {
+	function getInheritedNamespace( elem ) {
 
 		var $parent = $( elem );
 
@@ -2973,7 +3004,7 @@
 	//new Group()
 	//new Group(groupValue, parentGroup)
 	//new Group("$click|*alert;val:path", parentGroup);
-	function Group ( subscriptionText, parentGroup, groupNs, groupOptions ) {
+	function Group( subscriptionText, parentGroup, groupNs, groupOptions ) {
 
 		var nsProperty, match, emptyGroup;
 
@@ -3016,24 +3047,21 @@
 		while ((match = rSubscriptionProperty.exec( subscriptionText ))) {
 
 			var prefix = match[1],
-				key = match[2],
-				value = match[3],
-				keyValuePair = {
-					key: key,
-					value: value
-				};
+				prop = $.trim( match[2] ),
+				value = $.trim( match[3] );
+
 
 			if (prefix) {
 
-				this[prefix == "$" ? "pub" : "sub"].push( keyValuePair );
+				this[prefix == "$" ? "pub" : "sub"].push( { eventTypes : prop, value: value } );
 
 			} else {
 
-				if (key == "ns") {
+				if (prop == "ns") {
 					nsProperty = value;
 
 				} else {
-					this.groups.push( keyValuePair );
+					this.groups.push( { groupName: prop, value: value} );
 				}
 			}
 		}
@@ -3077,7 +3105,7 @@
 			for (i = 0; i < groups.length; i++) {
 
 				group = groups[i];
-				groupName = group.key;
+				groupName = group.groupName;
 
 				//if value is "path|option1|option2"
 				//
@@ -3119,7 +3147,7 @@
 			for (i = 0; i < subscriptionEntries.length; i++) {
 
 				subscriptionEntry = subscriptionEntries[i];
-				eventTypes = subscriptionEntry.key;
+				eventTypes = subscriptionEntry.eventTypes;
 
 				subscriptionParts = subscriptionEntry.value.split( rSubscriptionValueSeparator );
 
@@ -3167,7 +3195,7 @@
 			} );
 		},
 
-		prependSub: function prependSub ( subscriber, publisher, eventTypes, handler, options, delegate ) {
+		prependSub: function prependSub( subscriber, publisher, eventTypes, handler, options, delegate ) {
 			this.subscriptions.unshift( {
 				publisher: publisher,
 				eventTypes: eventTypes,
@@ -3183,7 +3211,7 @@
 		}
 	};
 
-	function buildElemGroup ( elem ) {
+	function buildElemGroup( elem ) {
 		var elemGroup, subscriptions, i, subscription, $elem = $( elem );
 
 		if (!$elem.hmData( "parsed" ) && $elem.attr( defaultOptions.subsAttr )) {
@@ -3964,7 +3992,7 @@
 	//val:path|,updateView
 	//val:path|,,date
 	//val:path|updateEvent,updateDirection,adapterName
-	hm.groups.val = function( elem, path, group, options ) {
+	hm.groups.val = function( elem, path, elemGroup, options ) {
 
 		var updateDirection,
 			updateEvent,
@@ -3982,18 +4010,18 @@
 		}
 
 		if (!updateDirection || updateDirection == "updateView") {
-			group.appendSub( elem, path, "init1 after*", "*updateViewValue", adapterName );
+			elemGroup.appendSub( elem, path, "init1 after*", "*updateViewValue", adapterName );
 		}
 
 		if (!updateDirection || updateDirection == "updateModel") {
 
-			group.appendSub( path, elem, updateEvent + " resetVal", "*updateModelValue", adapterName );
+			elemGroup.appendSub( path, elem, updateEvent + " resetVal", "*updateModelValue", adapterName );
 
 		}
 
 	};
 
-	hm.groups.resetFormValues = function( elem, path, subscriptions, options ) {
+	hm.groups.resetFormValues = function( elem, path, elemGroup, options ) {
 
 		var $elem = $( elem );
 
@@ -4020,7 +4048,7 @@
 
 	defaultOptions.confirmMessage = "Are you sure?";
 
-	function addGroupAndWorkflowType ( features ) {
+	function addGroupAndWorkflowType( features ) {
 		for (var name in features) {
 			var item = features[name];
 			hm.groups[name] = item[0];
@@ -4450,7 +4478,7 @@
 
 	extend( hm.groups, {
 
-		caption: function( elem, path, group, options ) {
+		caption: function( elem, path, elemGroup, options ) {
 
 			$( elem ).prepend( "<option value=''>" + (options || hm.get( path )) + "</option>" );
 		},
@@ -4461,37 +4489,34 @@
 			}, 1 );
 		},
 
-		mapEvent: function( elem, path, subscriptions, options ) {
+		mapEvent: function( elem, path, elemGroup, options ) {
 			options = options.split( "," );
 			$( elem ).mapEvent( options[0], options[1], options[2] );
 
 		},
 
-		mapClick: function( elem, path, subscriptions, options ) {
+		mapClick: function( elem, path, elemGroup, options ) {
 			options = options.split( "," );
 			$( elem ).mapEvent( "click", options[0], options[1] );
 		},
 
-		logPanel: function( elem, path, group, options ) {
+		logPanel: function( elem, path, elemGroup, options ) {
 
-			var $elem = $( elem ),
-				$ol = $elem.is( "ol" ) ? $elem : $( "<ol style='font-family: monospace, serif' />" ).appendTo( $elem ),
-				ol = $ol[0];
+			$( elem ).css( "list-style-type", "decimal" ).css( "font-family", "monospace, serif" );
 
-			//		appendSub: function( subscriber, publisher, eventTypes, handler, options, delegate ) {
-			group.appendSub( ol, "*log", "init", function( e ) {
+			elemGroup.appendSub( elem, "*log", "init", function( e ) {
 				var allLogs = e.publisher.get();
 				for (var i = 0; i < allLogs.length; i++) {
-					$ol.append( "<li>" + allLogs[i] + "</li>" );
+					this.append( "<li>" + allLogs[i] + "</li>" );
 				}
 			} );
 
-			group.appendSub( ol, "*log", "afterCreate.1", function( e ) {
-				$ol.append( "<li>" + e.originalPublisher.raw() + "</li>" );
+			elemGroup.appendSub( elem, "*log", "afterCreate.1", function( e ) {
+				this.append( "<li>" + e.originalPublisher.raw() + "</li>" );
 			} );
 
-			group.appendSub( ol, "*log", "afterCreate", function( e ) {
-				$ol.empty();
+			elemGroup.appendSub( elem, "*log", "afterCreate", function( e ) {
+				this.empty();
 			} );
 		},
 
@@ -4507,7 +4532,11 @@
 		html: "!init after*:.|get html *toString",
 
 		//data-sub="text:path"
-		text: "!init after*:.|get text *toString"
+		text: "!init after*:.|get text *toString",
+
+		removeIfDel: "!duringDel:.|*fakeGet remove",
+
+		emptyIfDel: "!duringDel:.|*fakeGet empty"
 
 	} );
 
@@ -4856,7 +4885,7 @@
 
 	extend( hm.groups, {
 
-		validator: function( elem, path, group, options ) {
+		validator: function( elem, path, elemGroup, options ) {
 			if (!options) {
 				throw "missing validator path";
 			}
@@ -4867,20 +4896,20 @@
 		},
 
 		//add a click handler to element to checkValidity
-		checkValidity: function( elem, path, subscriptions, options ) {
+		checkValidity: function( elem, path, elemGroup, options ) {
 			//prepend to to subscriptions array
 			//so that it is the first subscriptions, and it will be evaluated first
-			subscriptions.prependSub( path, elem, "click", "*checkValidity" );
+			elemGroup.prependSub( path, elem, "click", "*checkValidity" );
 		},
 
-		resetFormValidity: function( elem, path, subscriptions, options ) {
-			subscriptions.appendSub( path, elem, "reset", "*skipGet resetValidity" );
+		resetFormValidity: function( elem, path, elemGroup, options ) {
+			elemGroup.appendSub( path, elem, "reset", "*fakeGet resetValidity" );
 		},
 
-		//$click:.|*skipGet resetValidity
+		//$click:.|*fakeGet resetValidity
 		resetForm: "resetFormValidity:.;resetFormValues:.",
 
-		resetValidity: "$click:.|*skipGet resetValidity",
+		resetValidity: "$click:.|*fakeGet resetValidity",
 
 		warn: "!after*:*errors|*warn",
 
@@ -5930,7 +5959,7 @@
 				//delete the deleted data item in the view
 			"!afterDel.1:.|*removeRowView",
 
-		initQueryable: function( elem, path, subscriptions, options ) {
+		initQueryable: function( elem, path, elemGroup, options ) {
 			hm( path ).initQueryable( !!options );
 		},
 
@@ -5973,7 +6002,7 @@
 		               "$click:*refreshQuery",
 
 		//path is ignore, does not create any subscription
-		page: function( elem, path, group, pageIndex ) {
+		page: function( elem, path, elemGroup, pageIndex ) {
 			if (!pageIndex) {
 				throw "pageIndex is missing";
 			}
@@ -6439,7 +6468,7 @@
 
 		//$click:items|*editShadowItem
 		//$click:items*queryResult|*editShadowItem
-		newShadowItem: "*skipGet newShadowItem",
+		newShadowItem: "*fakeGet newShadowItem",
 
 		//$click:item|*editShadowItem
 		//$editRow:items|*editShadowItem
@@ -6543,7 +6572,7 @@
 
 		// shadowEdit:items|rowTemplateId or
 		// shadowEdit:items*queryResult|rowTemplateId
-		shadowEdit: "!init:.|initShadowEdit *skipSet;" +
+		shadowEdit: "!init:.|initShadowEdit *fakeSet;" +
 		            "deleteRow:.;" +
 		            "$editRow:.|*editShadowItem",
 
@@ -6582,8 +6611,8 @@
 		//showOnEdit:items
 		//showOnEdit:items*queryResult
 		//showOnEdit: "hide:*edit.mode|_read",
-		showOnEdit: function( elem, path, group, options ) {
-			group.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
+		showOnEdit: function( elem, path, elemGroup, options ) {
+			elemGroup.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
 				var mode = e.publisher.get();
 				this[(isUndefined( mode ) || mode == "read") ? "hide" : "show"]();
 			} );
@@ -6592,8 +6621,8 @@
 		//hideOnEdit:items
 		//hideOnEdit:items*queryResult
 		//hideOnEdit: "show:*edit.mode|_read",
-		hideOnEdit: function( elem, path, group, options ) {
-			group.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
+		hideOnEdit: function( elem, path, elemGroup, options ) {
+			elemGroup.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
 				var mode = e.publisher.get();
 				this[(isUndefined( mode ) || mode == "read") ? "show" : "hide"]();
 			} );
@@ -6771,12 +6800,12 @@
 	//a tab can be tabView or tabLink
 	//for tabLink use <li data-tabLink="news" data-sub="tab:category">News</li>
 	//for tabView use <div data-tabView="news" data-sub="tab:category">contents</div>
-	hm.groups.tab = function( elem, path, group, selectedClass ) {
+	hm.groups.tab = function( elem, path, elemGroup, selectedClass ) {
 
-		group.appendSub( elem, path, "init afterUpdate", "*highlightTab", selectedClass );
+		elemGroup.appendSub( elem, path, "init afterUpdate", "*highlightTab", selectedClass );
 
 		if ($( elem ).attr( defaultOptions.tabLinkAttr )) {
-			group.appendSub( path, elem, "click", handleTabLinkClick, defaultOptions.tabLinkAttr );
+			elemGroup.appendSub( path, elem, "click", handleTabLinkClick, defaultOptions.tabLinkAttr );
 		}
 
 	};
@@ -6800,7 +6829,7 @@
 	//	<div data-tabView="news">content</div>
 	//	<div data-tabView="opinion">content</div>
 	//</div>
-	hm.groups.tabContainer = function( elem, path, group, tabGroupAndSelectedClass ) {
+	hm.groups.tabContainer = function( elem, path, elemGroup, tabGroupAndSelectedClass ) {
 
 		tabGroupAndSelectedClass = tabGroupAndSelectedClass || "";
 		tabGroupAndSelectedClass = tabGroupAndSelectedClass.split( "," );
@@ -6813,11 +6842,11 @@
 			tabLinkAndTabViewSelector = tabLinkSelector + ",[" + tabViewAttr + "]" + tabGroupSelector;
 
 		//update the tab model with the tabLink when click
-		group.appendSub( path, elem, "click", handleTabLinkClick, tabLinkAttr, tabLinkSelector /*delegateSelector*/ );
+		elemGroup.appendSub( path, elem, "click", handleTabLinkClick, tabLinkAttr, tabLinkSelector /*delegateSelector*/ );
 
 		//
 		//highlight the tab when the path change
-		group.appendSub( elem, path, "init100 afterUpdate", "*highlightTabInContainer", {
+		elemGroup.appendSub( elem, path, "init100 afterUpdate", "*highlightTabInContainer", {
 			selector: tabLinkAndTabViewSelector,
 			selectedClass: tabGroupAndSelectedClass[1]
 		} );
@@ -7097,7 +7126,7 @@
 
 		//load an app when click
 		//data-sub="bootstrap:/|gmail,#containerId,options"
-		bootstrap: function(elem, path, subscripiptions, options) {
+		bootstrap: function(elem, path, elemGroup, options) {
 
 			var optionParts = rLoadAppOptions.exec( $.trim( options ) ),
 				appName = optionParts[1],

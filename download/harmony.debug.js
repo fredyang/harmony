@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Sat Feb 16 14:58:09 2013 -0500
+  * Date: Thu Feb 21 12:49:37 2013 -0500
   */
 (function( $, window, undefined ) {
 	"use strict";
@@ -526,6 +526,8 @@
 				return false;
 			}
 
+			trigger( physicalPath, physicalPath, "duringDel", undefined, removedValue );
+
 			if (isHostObjectArray) {
 
 				hostObj.splice( accessor.index, 1 );
@@ -552,6 +554,15 @@
 			return ( accessor.index in accessor.hostObj ) ?
 				this :
 				this.create( subPath, value, accessor );
+		},
+
+		toggle: function( subPath ) {
+
+			var accessor = this.accessor( subPath );
+			if (accessor.index in accessor.hostObj) {
+				this.update( subPath, !accessor.hostObj[accessor.index], accessor );
+			}
+			return this;
 		},
 
 		//navigation methods
@@ -1965,7 +1976,9 @@
 					return e.originalPublisher.get();
 				},
 
-				skipGet: returnTrue
+				fakeGet: function() {
+					return dummy;
+				}
 			},
 
 			//workflowInstance.set.call( subscriber, value, e );
@@ -1973,7 +1986,7 @@
 			//set(value, e)
 			set: {
 				setMember: setMember,
-				skipSet: $.noop
+				fakeSet: $.noop
 
 			},
 
@@ -2293,6 +2306,9 @@
 
 	function setAndFinalize( subscriber, workflowInstance, value, e ) {
 		if (!isUndefined( value )) {
+			if (value === dummy) {
+				value = undefined;
+			}
 			workflowInstance.set && workflowInstance.set.call( subscriber, value, e );
 			workflowInstance.finalize && workflowInstance.finalize.call( subscriber, value, e );
 		}
@@ -2562,7 +2578,6 @@
 
 		if (initialize) {
 			initialize( tryWrapPublisherSubscriber( publisher ), tryWrapPublisherSubscriber( subscriber ), workflowInstance, workflowOptions );
-			delete workflowInstance.initialize;
 		} else if (!isUndefined( workflowOptions )) {
 			workflowInstance.options = workflowOptions;
 		}
@@ -2851,16 +2866,38 @@
 			return this;
 		},
 
-		subsToMe: function() {
-			return subscriptionManager.getByPublisher( this.path );
+		subsToMe: function( print ) {
+			var rtn = subscriptionManager.getByPublisher( this.path );
+			//#debug
+			if (print && hm.printSubscriptions) {
+				hm.printSubscriptions( this.path, rtn, "toMe" );
+			}
+			//#end_debug
+
+			return rtn;
 		},
 
-		subsFromMe: function() {
-			return subscriptionManager.getBySubscriber( this.path );
+		subsFromMe: function( print ) {
+			var rtn = subscriptionManager.getBySubscriber( this.path );
+			//#debug
+			if (print && hm.printSubscriptions) {
+				hm.printSubscriptions( this.path, rtn, "fromMe" );
+			}
+			//#end_debug
+
+			return rtn;
 		},
 
-		subs: function() {
-			return subscriptionManager.getBy( this.path );
+		subs: function( print ) {
+			var rtn = subscriptionManager.getBy( this.path );
+
+			//#debug
+			if (print && hm.printSubscriptions) {
+				hm.printSubscriptions( this.path, rtn );
+			}
+			//#end_debug
+
+			return rtn;
 		},
 
 		/*
@@ -2918,16 +2955,40 @@
 			return this;
 		},
 
-		subsToMe: function() {
-			return subscriptionManager.getByPublisher( this[0] );
+		subsToMe: function( print ) {
+			var rtn = subscriptionManager.getByPublisher( this[0] );
+
+			//#debug
+			if (print && hm.printSubscriptions) {
+				hm.printSubscriptions( this[0], rtn, "toMe" );
+			}
+			//#end_debug
+
+			return rtn;
 		},
 
-		subsFromMe: function() {
-			return subscriptionManager.getBySubscriber( this[0] );
+		subsFromMe: function(print) {
+			var rtn = subscriptionManager.getBySubscriber( this[0] );
+
+			//#debug
+			if (print && hm.printSubscriptions) {
+				hm.printSubscriptions( this[0], rtn, "fromMe" );
+			}
+			//#end_debug
+
+			return rtn;
 		},
 
-		subs: function() {
-			return subscriptionManager.getBy( this[0] );
+		subs: function( print ) {
+			var rtn = subscriptionManager.getBy( this[0] );
+
+			//#debug
+			if (print && hm.printSubscriptions) {
+				hm.printSubscriptions( this[0], rtn );
+			}
+			//#end_debug
+
+			return rtn;
 		},
 
 		initView: function( path, workflow, options ) {
@@ -3036,7 +3097,7 @@
 	defaultOptions.subsAttr = "data-sub";
 	defaultOptions.autoparseSub = true;
 
-	function mergeOptions ( parentOptions, localOptions ) {
+	function mergeOptions( parentOptions, localOptions ) {
 		if (localOptions !== "_") {
 			return  (localOptions && localOptions.startsWith( "_" )) ?
 				localOptions.substr( 1 ) :
@@ -3044,7 +3105,7 @@
 		}
 	}
 
-	function getInheritedNamespace ( elem ) {
+	function getInheritedNamespace( elem ) {
 
 		var $parent = $( elem );
 
@@ -3063,7 +3124,7 @@
 	//new Group()
 	//new Group(groupValue, parentGroup)
 	//new Group("$click|*alert;val:path", parentGroup);
-	function Group ( subscriptionText, parentGroup, groupNs, groupOptions ) {
+	function Group( subscriptionText, parentGroup, groupNs, groupOptions ) {
 
 		var nsProperty, match, emptyGroup;
 
@@ -3106,24 +3167,21 @@
 		while ((match = rSubscriptionProperty.exec( subscriptionText ))) {
 
 			var prefix = match[1],
-				key = match[2],
-				value = match[3],
-				keyValuePair = {
-					key: key,
-					value: value
-				};
+				prop = $.trim( match[2] ),
+				value = $.trim( match[3] );
+
 
 			if (prefix) {
 
-				this[prefix == "$" ? "pub" : "sub"].push( keyValuePair );
+				this[prefix == "$" ? "pub" : "sub"].push( { eventTypes : prop, value: value } );
 
 			} else {
 
-				if (key == "ns") {
+				if (prop == "ns") {
 					nsProperty = value;
 
 				} else {
-					this.groups.push( keyValuePair );
+					this.groups.push( { groupName: prop, value: value} );
 				}
 			}
 		}
@@ -3167,7 +3225,7 @@
 			for (i = 0; i < groups.length; i++) {
 
 				group = groups[i];
-				groupName = group.key;
+				groupName = group.groupName;
 
 				//if value is "path|option1|option2"
 				//
@@ -3209,7 +3267,7 @@
 			for (i = 0; i < subscriptionEntries.length; i++) {
 
 				subscriptionEntry = subscriptionEntries[i];
-				eventTypes = subscriptionEntry.key;
+				eventTypes = subscriptionEntry.eventTypes;
 
 				subscriptionParts = subscriptionEntry.value.split( rSubscriptionValueSeparator );
 
@@ -3257,7 +3315,7 @@
 			} );
 		},
 
-		prependSub: function prependSub ( subscriber, publisher, eventTypes, handler, options, delegate ) {
+		prependSub: function prependSub( subscriber, publisher, eventTypes, handler, options, delegate ) {
 			this.subscriptions.unshift( {
 				publisher: publisher,
 				eventTypes: eventTypes,
@@ -3273,7 +3331,7 @@
 		}
 	};
 
-	function buildElemGroup ( elem ) {
+	function buildElemGroup( elem ) {
 		var elemGroup, subscriptions, i, subscription, $elem = $( elem );
 
 		if (!$elem.hmData( "parsed" ) && $elem.attr( defaultOptions.subsAttr )) {
@@ -3364,57 +3422,111 @@
 		var subscriptions = this.subscriptions,
 			elem = this.elem;
 
-		var message = "<table border='1' cellpadding='6' style='border-collapse: collapse '>" +
-		              "<tr><td>element</td><td colspan='6'>" + formatPrint( elem ) + "</td> </tr>" +
-		              "<tr><td>ns</td><td colspan='6'>" + formatPrint( this.ns ) + "</td></tr>" +
-		              "<tr><td>text</td><td colspan='6'>" + formatPrint( this.text ) + "</td></tr>" +
-		              "<tr><td>sub</td><td colspan='6'>" + formatPrint( this.sub ) + "</td></tr>" +
-		              "<tr><td>pub</td><td colspan='6'>" + formatPrint( this.pub ) + "</td></tr>" +
-		              "<tr><td>groups</td><td colspan='6'>" + formatPrint( this.groups ) + "</td></tr>";
+		var html = "<table border='1' cellpadding='6' style='border-collapse: collapse; width:100%;'>" +
+		           "<tr><td>element</td><td colspan='6'>" + formatParty( elem ) + "</td> </tr>" +
+		           "<tr><td>ns</td><td colspan='6'>" + formatParty( this.ns ) + "</td></tr>" +
+		           "<tr><td>text</td><td colspan='6'>" + formatPrint( this.text ) + "</td></tr>";
+
+		if (this.sub.length) {
+			html += "<tr><td>sub</td><td colspan='6'>" + formatPrint( this.sub ) + "</td></tr>";
+		}
+
+		if (this.pub.length) {
+			html += "<tr><td>pub</td><td colspan='6'>" + formatPrint( this.pub ) + "</td></tr>";
+		}
+
+		if (this.groups.length) {
+			html += "<tr><td>groups</td><td colspan='6'>" + formatPrint( this.groups ) + "</td></tr>";
+		}
 
 		if (subscriptions.length) {
 
-			message += "<tr>" +
-			           "<th></th>" +
-			           "<th>subscriber</th>" +
-			           "<th>publisher</th>" +
-			           "<th>eventTypes</th>" +
-			           "<th>handler</th>" +
-			           "<th>options</th>" +
-			           "<th>delegate</th>" +
-			           "</tr>";
+			html += "<tr>" +
+			        "<th></th>" +
+			        "<th>subscriber</th>" +
+			        "<th>publisher</th>" +
+			        "<th>eventTypes</th>" +
+			        "<th>handler</th>" +
+			        "<th>options</th>" +
+			        "<th>delegate</th>" +
+			        "</tr>";
 
 			for (var i = 0; i < subscriptions.length; i++) {
 				var subscription = subscriptions[i];
-				message += "<tr>" +
-				           "<td>" + (i + 1) + "</td>" +
-				           "<td>" + formatPrint( subscription.subscriber, elem ) + "</td>" +
-				           "<td>" + formatPrint( subscription.publisher, elem ) + "</td>" +
-				           "<td>" + formatPrint( subscription.eventTypes ) + "</td>" +
-				           "<td>" + formatPrint( subscription.handler ) + "</td>" +
-				           "<td>" + formatPrint( subscription.options ) + "</td>" +
-				           "<td>" + formatPrint( subscription.delegate ) + "</td>" +
-				           "</tr>";
+				html += "<tr>" +
+				        "<td>" + (i + 1) + "</td>" +
+				        "<td>" + formatParty( subscription.subscriber, elem ) + "</td>" +
+				        "<td>" + formatParty( subscription.publisher, elem ) + "</td>" +
+				        "<td>" + formatPrint( subscription.eventTypes ) + "</td>" +
+				        "<td>" + formatPrint( subscription.handler ) + "</td>" +
+				        "<td>" + formatPrint( subscription.options ) + "</td>" +
+				        "<td>" + formatPrint( subscription.delegate ) + "</td>" +
+				        "</tr>";
 			}
 		}
 
-		message += "</table>";
-		hm.log( message );
+		html += "</table>";
+		hm.log( html );
 
 	};
 
-	function formatPrint ( obj, elem ) {
-		if (!obj) {
-			return "";
-		} else if (isString( obj )) {
-			return obj;
-		}
+	function formatParty( obj, elem ) {
+
 		if (obj === elem) {
 			return "element";
-		} else if (obj.nodeType) {
-			return util.encodeHtml( obj.outerHTML ).substr( 0, 40 ) + "...";
+		}
+
+		if (obj.nodeType) {
+			return util.encodeHtml( obj.outerHTML ).substr( 0, 100 ) + "...";
+		}
+
+		if (isString( obj )) {
+			if (obj.startsWith( "$" )) {
+				return "$('" + obj.substr( 1 ) + "')";
+			} else {
+				if (elem) {
+					return "hm('" + util.toLogicalPath( obj ) + "')";
+				} else {
+					return "'" + util.toLogicalPath( obj ) + "'";
+				}
+			}
+		}
+
+	}
+
+	function formatPrint( obj ) {
+
+		if (isUndefined( obj )) {
+			return "";
 		} else if (isFunction( obj )) {
-			return util.encodeHtml( obj + "" ).substr( 0, 40 ) + "...";
+
+			return util.encodeHtml( obj + "" ).substr( 0, 100 ) + "...";
+
+		} else if (isObject( obj )) {
+
+			var rtn = "<pre>{";
+			var temp = "";
+			for (var key in obj) {
+				var value = obj[key];
+				if (!isUndefined( value )) {
+					temp += "\n " + key + ":";
+					if (isString( value )) {
+						temp += "'" + util.encodeHtml( value ) + "',"
+					} else {
+						temp += util.encodeHtml( value ) + ","
+					}
+				}
+
+			}
+
+			if (temp.length != 0) {
+				temp = temp.substr( 0, temp.length - 1 );
+			}
+			rtn += temp;
+
+			rtn += "\n}</pre>";
+			rtn = rtn.replace( /\t/g, " " );
+			return rtn;
 		} else {
 			return JSON.stringify( obj );
 		}
@@ -3425,13 +3537,96 @@
 	};
 
 	hm.printGroup = function( elem ) {
-		if (isString(elem)) {
-			elem = $("<div></div>" ).attr(hm.options.subsAttr, elem)[0];
+		if (isString( elem )) {
+			elem = $( "<div></div>" ).attr( hm.options.subsAttr, elem )[0];
 		} else if (elem.jquery) {
 			elem = elem[0];
 		}
 
 		(new hm.Group( elem )).print();
+	};
+
+	//me can be a DOM element, or it can a string path
+	hm.printSubscriptions = function( me, subscriptions, type ) {
+		if (!subscriptions.length) {
+			hm.log( "no subscription" );
+			return;
+		}
+
+		var subsFromMe, subsToMe;
+		if (type == "fromMe") {
+			subsFromMe = subscriptions;
+		} else if (type == "toMe") {
+
+			subsToMe = subscriptions;
+
+		} else {
+
+			subsFromMe = $( subscriptions ).filter(function( index, item ) {
+				return item.subscriber == me;
+			} ).get();
+
+			subsToMe = $( subscriptions ).filter(function( index, item ) {
+				return item.publisher == me;
+			} ).get();
+
+		}
+
+		/*return getSubscriptionsBy( subscriberOrPublisher, function match( item, target ) {
+		 return item.subscriber == target || item.publisher == target;
+		 } );*/
+
+		var myDescription;
+
+		if (isString( me ) || (me instanceof  hm)) {
+
+			myDescription = "hm('" + util.toLogicalPath( me ) + "')";
+
+		} else {
+
+			myDescription = formatParty( me );
+
+		}
+
+		var html = "<table border='1' cellpadding='6' style='border-collapse: collapse; width:100%;'>";
+
+		if (subsFromMe && subsFromMe.length) {
+			html += "<tr><th colspan='6'><b>Subscriber: </b> " + myDescription + "</th></tr>";
+			html += "<tr><th></th><th>Publisher:</th><th>events</th><th>workflow</th><th>options</th><th>delegate</th></th>";
+
+			for (var i = 0; i < subsFromMe.length; i++) {
+				var subscription = subsFromMe[i];
+				html += "<tr>" +
+				        "<td>" + (i + 1) + "</td>" +
+				        "<td>" + formatParty( subscription.publisher ) + "</td>" +
+				        "<td>" + formatPrint( subscription.eventTypes ) + "</td>" +
+				        "<td>" + formatPrint( subscription.workflow ) + "</td>" +
+				        "<td>" + formatPrint( subscription.options ) + "</td>" +
+				        "<td>" + formatPrint( subscription.delegate ) + "</td>" +
+				        "</tr>";
+			}
+		}
+
+		if (subsToMe && subsToMe.length) {
+			html += "<tr><th colspan='6'>Publisher: " + myDescription + "</th></tr>";
+			html += "<tr><th></th><th>Subscriber:</th><th>events</th><th>workflow</th><th>options</th><th>delegate</th></tr>";
+
+			for (var i = 0; i < subsToMe.length; i++) {
+				var subscription = subsToMe[i];
+				html += "<tr>" +
+				        "<td>" + (i + 1) + "</td>" +
+				        "<td>" + formatParty( subscription.subscriber ) + "</td>" +
+				        "<td>" + formatPrint( subscription.eventTypes ) + "</td>" +
+				        "<td>" + formatPrint( subscription.workflow ) + "</td>" +
+				        "<td>" + formatPrint( subscription.options ) + "</td>" +
+				        "<td>" + formatPrint( subscription.delegate ) + "</td>" +
+				        "</tr>";
+			}
+		}
+
+		html += "</table>";
+		hm.log( html );
+
 	};
 
 //#end_debug//
@@ -4146,7 +4341,7 @@
 	//val:path|,updateView
 	//val:path|,,date
 	//val:path|updateEvent,updateDirection,adapterName
-	hm.groups.val = function( elem, path, group, options ) {
+	hm.groups.val = function( elem, path, elemGroup, options ) {
 
 		var updateDirection,
 			updateEvent,
@@ -4164,18 +4359,18 @@
 		}
 
 		if (!updateDirection || updateDirection == "updateView") {
-			group.appendSub( elem, path, "init1 after*", "*updateViewValue", adapterName );
+			elemGroup.appendSub( elem, path, "init1 after*", "*updateViewValue", adapterName );
 		}
 
 		if (!updateDirection || updateDirection == "updateModel") {
 
-			group.appendSub( path, elem, updateEvent + " resetVal", "*updateModelValue", adapterName );
+			elemGroup.appendSub( path, elem, updateEvent + " resetVal", "*updateModelValue", adapterName );
 
 		}
 
 	};
 
-	hm.groups.resetFormValues = function( elem, path, subscriptions, options ) {
+	hm.groups.resetFormValues = function( elem, path, elemGroup, options ) {
 
 		var $elem = $( elem );
 
@@ -4202,7 +4397,7 @@
 
 	defaultOptions.confirmMessage = "Are you sure?";
 
-	function addGroupAndWorkflowType ( features ) {
+	function addGroupAndWorkflowType( features ) {
 		for (var name in features) {
 			var item = features[name];
 			hm.groups[name] = item[0];
@@ -4632,7 +4827,7 @@
 
 	extend( hm.groups, {
 
-		caption: function( elem, path, group, options ) {
+		caption: function( elem, path, elemGroup, options ) {
 
 			$( elem ).prepend( "<option value=''>" + (options || hm.get( path )) + "</option>" );
 		},
@@ -4643,37 +4838,34 @@
 			}, 1 );
 		},
 
-		mapEvent: function( elem, path, subscriptions, options ) {
+		mapEvent: function( elem, path, elemGroup, options ) {
 			options = options.split( "," );
 			$( elem ).mapEvent( options[0], options[1], options[2] );
 
 		},
 
-		mapClick: function( elem, path, subscriptions, options ) {
+		mapClick: function( elem, path, elemGroup, options ) {
 			options = options.split( "," );
 			$( elem ).mapEvent( "click", options[0], options[1] );
 		},
 
-		logPanel: function( elem, path, group, options ) {
+		logPanel: function( elem, path, elemGroup, options ) {
 
-			var $elem = $( elem ),
-				$ol = $elem.is( "ol" ) ? $elem : $( "<ol style='font-family: monospace, serif' />" ).appendTo( $elem ),
-				ol = $ol[0];
+			$( elem ).css( "list-style-type", "decimal" ).css( "font-family", "monospace, serif" );
 
-			//		appendSub: function( subscriber, publisher, eventTypes, handler, options, delegate ) {
-			group.appendSub( ol, "*log", "init", function( e ) {
+			elemGroup.appendSub( elem, "*log", "init", function( e ) {
 				var allLogs = e.publisher.get();
 				for (var i = 0; i < allLogs.length; i++) {
-					$ol.append( "<li>" + allLogs[i] + "</li>" );
+					this.append( "<li>" + allLogs[i] + "</li>" );
 				}
 			} );
 
-			group.appendSub( ol, "*log", "afterCreate.1", function( e ) {
-				$ol.append( "<li>" + e.originalPublisher.raw() + "</li>" );
+			elemGroup.appendSub( elem, "*log", "afterCreate.1", function( e ) {
+				this.append( "<li>" + e.originalPublisher.raw() + "</li>" );
 			} );
 
-			group.appendSub( ol, "*log", "afterCreate", function( e ) {
-				$ol.empty();
+			elemGroup.appendSub( elem, "*log", "afterCreate", function( e ) {
+				this.empty();
 			} );
 		},
 
@@ -4689,7 +4881,11 @@
 		html: "!init after*:.|get html *toString",
 
 		//data-sub="text:path"
-		text: "!init after*:.|get text *toString"
+		text: "!init after*:.|get text *toString",
+
+		removeIfDel: "!duringDel:.|*fakeGet remove",
+
+		emptyIfDel: "!duringDel:.|*fakeGet empty"
 
 	} );
 
@@ -5038,7 +5234,7 @@
 
 	extend( hm.groups, {
 
-		validator: function( elem, path, group, options ) {
+		validator: function( elem, path, elemGroup, options ) {
 			if (!options) {
 				throw "missing validator path";
 			}
@@ -5049,20 +5245,20 @@
 		},
 
 		//add a click handler to element to checkValidity
-		checkValidity: function( elem, path, subscriptions, options ) {
+		checkValidity: function( elem, path, elemGroup, options ) {
 			//prepend to to subscriptions array
 			//so that it is the first subscriptions, and it will be evaluated first
-			subscriptions.prependSub( path, elem, "click", "*checkValidity" );
+			elemGroup.prependSub( path, elem, "click", "*checkValidity" );
 		},
 
-		resetFormValidity: function( elem, path, subscriptions, options ) {
-			subscriptions.appendSub( path, elem, "reset", "*skipGet resetValidity" );
+		resetFormValidity: function( elem, path, elemGroup, options ) {
+			elemGroup.appendSub( path, elem, "reset", "*fakeGet resetValidity" );
 		},
 
-		//$click:.|*skipGet resetValidity
+		//$click:.|*fakeGet resetValidity
 		resetForm: "resetFormValidity:.;resetFormValues:.",
 
-		resetValidity: "$click:.|*skipGet resetValidity",
+		resetValidity: "$click:.|*fakeGet resetValidity",
 
 		warn: "!after*:*errors|*warn",
 
@@ -6112,7 +6308,7 @@
 				//delete the deleted data item in the view
 			"!afterDel.1:.|*removeRowView",
 
-		initQueryable: function( elem, path, subscriptions, options ) {
+		initQueryable: function( elem, path, elemGroup, options ) {
 			hm( path ).initQueryable( !!options );
 		},
 
@@ -6155,7 +6351,7 @@
 		               "$click:*refreshQuery",
 
 		//path is ignore, does not create any subscription
-		page: function( elem, path, group, pageIndex ) {
+		page: function( elem, path, elemGroup, pageIndex ) {
 			if (!pageIndex) {
 				throw "pageIndex is missing";
 			}
@@ -6621,7 +6817,7 @@
 
 		//$click:items|*editShadowItem
 		//$click:items*queryResult|*editShadowItem
-		newShadowItem: "*skipGet newShadowItem",
+		newShadowItem: "*fakeGet newShadowItem",
 
 		//$click:item|*editShadowItem
 		//$editRow:items|*editShadowItem
@@ -6725,7 +6921,7 @@
 
 		// shadowEdit:items|rowTemplateId or
 		// shadowEdit:items*queryResult|rowTemplateId
-		shadowEdit: "!init:.|initShadowEdit *skipSet;" +
+		shadowEdit: "!init:.|initShadowEdit *fakeSet;" +
 		            "deleteRow:.;" +
 		            "$editRow:.|*editShadowItem",
 
@@ -6764,8 +6960,8 @@
 		//showOnEdit:items
 		//showOnEdit:items*queryResult
 		//showOnEdit: "hide:*edit.mode|_read",
-		showOnEdit: function( elem, path, group, options ) {
-			group.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
+		showOnEdit: function( elem, path, elemGroup, options ) {
+			elemGroup.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
 				var mode = e.publisher.get();
 				this[(isUndefined( mode ) || mode == "read") ? "hide" : "show"]();
 			} );
@@ -6774,8 +6970,8 @@
 		//hideOnEdit:items
 		//hideOnEdit:items*queryResult
 		//hideOnEdit: "show:*edit.mode|_read",
-		hideOnEdit: function( elem, path, group, options ) {
-			group.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
+		hideOnEdit: function( elem, path, elemGroup, options ) {
+			elemGroup.appendSub( elem, path + "*edit.mode", "init afterUpdate", function( e ) {
 				var mode = e.publisher.get();
 				this[(isUndefined( mode ) || mode == "read") ? "show" : "hide"]();
 			} );
@@ -6953,12 +7149,12 @@
 	//a tab can be tabView or tabLink
 	//for tabLink use <li data-tabLink="news" data-sub="tab:category">News</li>
 	//for tabView use <div data-tabView="news" data-sub="tab:category">contents</div>
-	hm.groups.tab = function( elem, path, group, selectedClass ) {
+	hm.groups.tab = function( elem, path, elemGroup, selectedClass ) {
 
-		group.appendSub( elem, path, "init afterUpdate", "*highlightTab", selectedClass );
+		elemGroup.appendSub( elem, path, "init afterUpdate", "*highlightTab", selectedClass );
 
 		if ($( elem ).attr( defaultOptions.tabLinkAttr )) {
-			group.appendSub( path, elem, "click", handleTabLinkClick, defaultOptions.tabLinkAttr );
+			elemGroup.appendSub( path, elem, "click", handleTabLinkClick, defaultOptions.tabLinkAttr );
 		}
 
 	};
@@ -6982,7 +7178,7 @@
 	//	<div data-tabView="news">content</div>
 	//	<div data-tabView="opinion">content</div>
 	//</div>
-	hm.groups.tabContainer = function( elem, path, group, tabGroupAndSelectedClass ) {
+	hm.groups.tabContainer = function( elem, path, elemGroup, tabGroupAndSelectedClass ) {
 
 		tabGroupAndSelectedClass = tabGroupAndSelectedClass || "";
 		tabGroupAndSelectedClass = tabGroupAndSelectedClass.split( "," );
@@ -6995,11 +7191,11 @@
 			tabLinkAndTabViewSelector = tabLinkSelector + ",[" + tabViewAttr + "]" + tabGroupSelector;
 
 		//update the tab model with the tabLink when click
-		group.appendSub( path, elem, "click", handleTabLinkClick, tabLinkAttr, tabLinkSelector /*delegateSelector*/ );
+		elemGroup.appendSub( path, elem, "click", handleTabLinkClick, tabLinkAttr, tabLinkSelector /*delegateSelector*/ );
 
 		//
 		//highlight the tab when the path change
-		group.appendSub( elem, path, "init100 afterUpdate", "*highlightTabInContainer", {
+		elemGroup.appendSub( elem, path, "init100 afterUpdate", "*highlightTabInContainer", {
 			selector: tabLinkAndTabViewSelector,
 			selectedClass: tabGroupAndSelectedClass[1]
 		} );
@@ -7279,7 +7475,7 @@
 
 		//load an app when click
 		//data-sub="bootstrap:/|gmail,#containerId,options"
-		bootstrap: function(elem, path, subscripiptions, options) {
+		bootstrap: function(elem, path, elemGroup, options) {
 
 			var optionParts = rLoadAppOptions.exec( $.trim( options ) ),
 				appName = optionParts[1],
