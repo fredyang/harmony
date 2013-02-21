@@ -3,7 +3,7 @@
   * © Fred Yang - http://semanticsworks.com
   * License: MIT (http://www.opensource.org/licenses/mit-license.php)
   *
-  * Date: Thu Feb 21 12:49:37 2013 -0500
+  * Date: Thu Feb 21 17:33:29 2013 -0500
   */
 (function( $, window, undefined ) {
 	"use strict";
