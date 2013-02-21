@@ -5,7 +5,7 @@
 	} );
 
 	var ns = "api",
-		version = "3",
+		version = "4",
 		appNode,
 		getSubEntriesNode,
 		entriesNode,

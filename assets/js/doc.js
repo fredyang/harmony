@@ -1,12 +1,14 @@
 var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-38317100-1']);
-_gaq.push(['_setDomainName', 'semanticsworks.com']);
-_gaq.push(['_trackPageview']);
+_gaq.push( ['_setAccount', 'UA-38317100-1'] );
+_gaq.push( ['_setDomainName', 'semanticsworks.com'] );
+_gaq.push( ['_trackPageview'] );
 
 (function() {
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+	var ga = document.createElement( 'script' );
+	ga.type = 'text/javascript';
+	ga.async = true;
+	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	(document.getElementsByTagName( 'head' )[0] || document.getElementsByTagName( 'body' )[0]).appendChild( ga );
 })();
 
 
@@ -14,14 +16,14 @@ if (!matrix.baseUrl) {
 	matrix.baseUrl = "../assets/";
 }
 
-matrix.hash( 15 );
+matrix.hash( 16 );
 
 matrix( true,
 	"prettify/prettify.css," +
 	"prettify/prettify.js"
 );
 
-hm.groups.preview = function( elem, path, subscriptions, options ) {
+hm.groups.preview = function( elem, path, elemGroup, options ) {
 
 	if (!options) {
 		return;
@@ -59,10 +61,15 @@ $( function() {
 	} );
 } );
 
-hm.groups.prettyprint = function( elem, path, subscriptions, options ) {
+hm.groups.prettyprint = function( elem, path, elemGroup, options ) {
 	$( elem ).html( prettyPrintOne( $( elem ).html() ) ).addClass( "code" );
 };
 
-hm.groups.linkOut = function (elem, path, group, options) {
-	$( elem ).find("a" ).attr("target", "_blank");
-}
+hm.groups.linkOut = function( elem, path, elemGroup, options ) {
+	$( elem ).find( "a" ).attr( "target", "_blank" );
+};
+
+
+hm.groups.plusone = function( elem, path, elemGroup, options ) {
+	gapi.plusone.render(elem, {"size": "standard"});
+};
